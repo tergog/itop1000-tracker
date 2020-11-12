@@ -18,47 +18,38 @@ export class AppComponent implements OnInit {
 
   private timeStart: number;
 
+  public workTime = 0;
   public time: number = 0;
   public image: string;
 
-  private nextScreenshotTime: number;
+  private nextScreenshotTime: number = 0;
   private screenshotInterval: number;
 
-  constructor(private electronService: ElectronService) {
-
-  }
+  constructor(private electronService: ElectronService) {}
 
   ngOnInit(): void {
     this.timeStart = Date.now();
-    interval(1000).subscribe(() => {
+    interval(1000).subscribe((sec) => {
+      console.log(sec, this.nextScreenshotTime);
       if (this.time === this.nextScreenshotTime) {
-        // this.takeScreenshot();
+        this.takeScreenshot();
       }
-      this.time = Date.now() - this.timeStart;
+      this.time = sec;
+      this.workTime = Date.now() - this.timeStart;
     });
   }
 
   public takeScreenshot(): void {
-    const img = this.robot.screen.capture(0, 0, 64, 64);
+    // const img = this.robot.screen.capture(0, 0, 64, 64);
 
-    const arrayBuffer = new Uint8Array(img.image);
+    this.robot.keyTap('printscreen');
 
-    console.log(arrayBuffer);
-
-
-    // const blob = new Blob([new Uint8Array(img.image)], {type: 'application/octet-stream'});
-    // const imageUrl = URL.createObjectURL(blob);
-
-
-    const base64String = btoa(String.fromCharCode.apply(null, new Uint8Array(img.image)));
-    this.image = 'data:aplication/octet-stream;base64,' + base64String;
-
-
-    this.screenshotInterval = this.getRandomNumber(5, 15) * 60 * 1000;
+    this.screenshotInterval = this.getRandomNumber(5, 15) * 60;
     this.nextScreenshotTime = this.time + this.screenshotInterval;
   }
 
   private getRandomNumber(min, max): number {
-    return Math.random() * (max - min) + min;
+    let rand = min + Math.random() * (max + 1 - min);
+    return Math.floor(rand);
   }
 }
