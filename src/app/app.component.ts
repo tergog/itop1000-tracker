@@ -1,9 +1,7 @@
-import { Component, ElementRef, OnInit, ViewChild, ViewRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { interval } from 'rxjs';
 import { ElectronService } from 'ngx-electron';
-import * as robotjs from 'robotjs';
-import * as fs from 'fs';
-import * as path from 'path';
+import { ScreenshotService } from '../services/screenshot.service';
 
 @Component({
   selector: 'app-root',
@@ -13,39 +11,35 @@ import * as path from 'path';
 export class AppComponent implements OnInit {
   title = 'time-tracker';
 
-  private robot = this.electronService.remote.require('robotjs');
-  private fs = this.electronService.remote.require('fs');
+  public workTime = 0;
+
 
   private timeStart: number;
-
-  public workTime = 0;
-  public time: number = 0;
-  public image: string;
-
+  private secondCount: number = 0;
   private nextScreenshotTime: number = 0;
   private screenshotInterval: number;
 
-  constructor(private electronService: ElectronService) {}
+  constructor(
+    private electronService: ElectronService,
+    private screenshotService: ScreenshotService) {}
 
   ngOnInit(): void {
     this.timeStart = Date.now();
+
     interval(1000).subscribe((sec) => {
-      console.log(sec, this.nextScreenshotTime);
-      if (this.time === this.nextScreenshotTime) {
+      if (this.secondCount === this.nextScreenshotTime) {
         this.takeScreenshot();
       }
-      this.time = sec;
+      this.secondCount = sec;
       this.workTime = Date.now() - this.timeStart;
     });
   }
 
   public takeScreenshot(): void {
-    // const img = this.robot.screen.capture(0, 0, 64, 64);
-
-    this.robot.keyTap('printscreen');
+    this.screenshotService.takeScreenshot();
 
     this.screenshotInterval = this.getRandomNumber(5, 15) * 60;
-    this.nextScreenshotTime = this.time + this.screenshotInterval;
+    this.nextScreenshotTime = this.secondCount + this.screenshotInterval;
   }
 
   private getRandomNumber(min, max): number {

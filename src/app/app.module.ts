@@ -1,8 +1,12 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+
+import { ElectronService } from 'ngx-electron';
+import { ScreenshotService } from '../services/screenshot.service';
 
 import { AppComponent } from './app.component';
-import { ElectronService } from 'ngx-electron';
+
 
 @NgModule({
   declarations: [
@@ -10,9 +14,12 @@ import { ElectronService } from 'ngx-electron';
   ],
   imports: [
     BrowserModule,
-
+    HttpClientModule
   ],
-  providers: [ElectronService],
+  providers: [
+    ElectronService,
+    ScreenshotService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

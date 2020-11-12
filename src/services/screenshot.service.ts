@@ -1,17 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
 
-
-@Injectable({
-  providedIn: 'root'
-})
-export class DevelopersService {
+@Injectable()
+export class ScreenshotService {
 
   constructor(private http: HttpClient) { }
 
-
-  public uploadScreenshot(image: string | ArrayBuffer): Observable<string> {
-    return this.http.post<string>(``, {image});
+  public takeScreenshot() {
+    return this.http.get(`http://localhost:3000/screenshots`).subscribe(() => console.log('success'));
   }
 }
