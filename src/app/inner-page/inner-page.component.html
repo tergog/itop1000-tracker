@@ -1,2 +1,7 @@
-<app-time-tracker></app-time-tracker>
-<app-projects [projects]="projects"></app-projects>
+<app-time-tracker *ngIf="isStarted"></app-time-tracker>
+<div class="projects" *ngIf="!isStarted">
+  <app-project-card
+    class="project-card"
+    (isStarted)="startWork()"
+    *ngFor="let project of projects" [project]="project"></app-project-card>
+</div>

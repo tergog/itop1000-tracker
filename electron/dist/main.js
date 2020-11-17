@@ -12,6 +12,9 @@ function createWindow() {
     win = new electron_1.BrowserWindow({
         width: 800,
         height: 600,
+        resizable: false,
+        useContentSize: true,
+        // autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: true,
             enableRemoteModule: true

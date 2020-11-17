@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { interval } from 'rxjs';
+import { interval, Observable } from 'rxjs';
 import { ScreenshotService } from '../../services/screenshot.service';
 import jwtDecode from 'jwt-decode';
 import { take } from 'rxjs/operators';
@@ -7,7 +7,7 @@ import { take } from 'rxjs/operators';
 @Component({
   selector: 'app-time-tracker',
   templateUrl: './time-tracker.component.html',
-  styleUrls: ['./time-tracker.component.css']
+  styleUrls: ['./time-tracker.component.scss']
 })
 export class TimeTrackerComponent implements OnInit {
 
@@ -19,11 +19,16 @@ export class TimeTrackerComponent implements OnInit {
   private nextScreenshotTime: number = 0;
   private screenshotInterval: number = 0;
 
+  private interval: Observable<any>;
+  private timer;
+
   constructor(
     private screenshotService: ScreenshotService) {}
 
   ngOnInit(): void {
     this.timeStart = Date.now();
+
+    this.interval = interval(1000);
 
     interval(1000).subscribe((sec) => {
       if (this.secondCount === this.nextScreenshotTime) {
@@ -32,6 +37,18 @@ export class TimeTrackerComponent implements OnInit {
       this.secondCount = sec;
       this.workTime = Date.now() - this.timeStart;
     });
+
+  }
+
+  public startWorkTime() {
+    this.timer = this.interval
+  }
+
+  public stopWorkTime() {
+
+  }
+
+  public endWorkTime() {
 
   }
 

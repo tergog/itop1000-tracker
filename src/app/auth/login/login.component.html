@@ -1,15 +1,18 @@
-<form [formGroup]="authForm" (ngSubmit)="onSubmit()">
+<form class="login" [formGroup]="authForm" (ngSubmit)="onSubmit()">
   <div>
-    <label> Email
-      <input type="text" formControlName="email">
+    <label> <span>Email address</span>
+      <input placeholder="Email" formControlName="email">
     </label>
   </div>
   <div>
-    <label> Password
-      <input formControlName="password">
+    <label> <span>Password</span>
+      <input placeholder="Password" type="password" formControlName="password">
     </label>
   </div>
   <div>
-    <button>Sign In</button>
+    <button><span>Sign In</span></button>
+  </div>
+  <div class="error-message" *ngIf="errorMessage">
+    <span >{{errorMessage}}</span>
   </div>
 </form>

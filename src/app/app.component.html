@@ -1,7 +1,8 @@
 <div *ngIf="isAuth">
-  <button (click)="onLogoutClick()">Log out</button>
+  <button class="logout" (click)="onLogoutClick()">Log out</button>
   <app-inner-page></app-inner-page>
 </div>
 <div *ngIf="!isAuth">
   <app-login (isAuth)="onLogin()"></app-login>
 </div>
+

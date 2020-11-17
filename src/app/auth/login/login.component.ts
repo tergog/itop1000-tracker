@@ -1,18 +1,19 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { UsersService } from '../../services/users.service';
-import jwtDecode from 'jwt-decode';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit {
   authForm = this.fb.group({
     email: ['', Validators.required],
     password: ['', Validators.required]
   })
+
+  public errorMessage: string;
 
   @Output() isAuth: EventEmitter<boolean> = new EventEmitter<boolean>();
 
@@ -27,7 +28,8 @@ export class LoginComponent implements OnInit {
         localStorage.setItem("token", userInfo.token);
         this.isAuth.emit(true);
       },
-      error => console.log(error.message));
+      err => this.errorMessage = err.error.message
+    );
   }
 
 }

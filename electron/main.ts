@@ -14,6 +14,9 @@ function createWindow() {
   win = new BrowserWindow({
     width: 800,
     height: 600,
+    resizable: false,
+    useContentSize: true,
+    // autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true
@@ -27,4 +30,5 @@ function createWindow() {
   win.on('closed', () => {
     win = null
   })
+
 }
