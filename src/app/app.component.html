@@ -1,1 +1,7 @@
-<h1>Time - {{workTime - ( 3 * 1000 * 60 * 60 ) | date : 'HH:mm:ss'}}</h1>
+<div *ngIf="isAuth">
+  <button (click)="onLogoutClick()">Log out</button>
+  <app-inner-page></app-inner-page>
+</div>
+<div *ngIf="!isAuth">
+  <app-login (isAuth)="onLogin()"></app-login>
+</div>

@@ -6,7 +6,7 @@ export class ScreenshotService {
 
   constructor(private http: HttpClient) { }
 
-  public takeScreenshot() {
-    return this.http.get(`http://localhost:3000/screenshots`).subscribe(() => console.log('success'));
+  public takeScreenshot(employerId, projectTitle, userId) {
+    return this.http.post(`http://localhost:3000/users/screenshot`, {employerId, projectTitle, userId});
   }
 }
