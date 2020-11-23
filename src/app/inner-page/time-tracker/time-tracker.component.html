@@ -1,5 +1,5 @@
 <h1>Time - {{workTime - ( 3 * 1000 * 60 * 60 ) | date : 'HH:mm:ss'}}</h1>
 
-<button>Stop</button>
-<button>Start</button>
-<button>End</button>
+<button (click)="stopWorkTime()">Pause</button>
+<button (click)="startWorkTime()">Start</button>
+<button (click)="endWorkTime()">End</button>

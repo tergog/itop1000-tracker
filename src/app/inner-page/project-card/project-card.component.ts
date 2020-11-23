@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Project } from '../../shared/models/project.model';
 
 @Component({
   selector: 'app-project-card',
@@ -7,17 +8,18 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 })
 export class ProjectCardComponent implements OnInit {
 
-  @Input() project;
+  @Input() project: Project;
+  @Input() projectArrayId: number;
 
-  @Output() isStarted: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() isStarted: EventEmitter<number> = new EventEmitter<number>();
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
-  public startWork() {
-    this.isStarted.emit(true);
+  public startWork(projectArrayId: number) {
+    this.isStarted.emit(projectArrayId);
   }
 
 }

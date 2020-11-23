@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import jwtDecode from 'jwt-decode';
 
 @Component({
   selector: 'app-root',

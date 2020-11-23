@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { UsersService } from '../../services/users.service';
+import { UsersService } from '../../shared/services/users.service';
 
 @Component({
   selector: 'app-login',

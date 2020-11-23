@@ -5,8 +5,6 @@ import { InnerPageComponent } from './inner-page.component';
 import { TimeTrackerComponent } from './time-tracker/time-tracker.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
-
-
 @NgModule({
   declarations: [
     InnerPageComponent,

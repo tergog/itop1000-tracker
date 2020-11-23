@@ -10,27 +10,3 @@
   align-items: center;
 }
 
-.logout {
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  background: #BDBDBD;
-  box-shadow: inset 0 6px 5px rgba(255, 255, 255, 0.3);
-  border-radius: 30px;
-
-  color: #FFFFFF;
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 18px;
-  text-align: center;
-  text-transform: capitalize;
-
-  margin: 10px 20px;
-  width: 120px;
-  height: 30px;
-
-  &:active, &:focus {
-    outline: none !important;
-  }
-}
