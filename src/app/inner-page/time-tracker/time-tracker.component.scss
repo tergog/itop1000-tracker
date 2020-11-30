@@ -1,3 +1,33 @@
-h1 {
-  color: #FFFFFF;
+.time-tracker-wrapper {
+  padding: 0 20px;
 }
+
+.title {
+  padding-top: 20px;
+  display: flex;
+
+  .cancel-button {
+    width: 30px;
+    height: 30px;
+    background: url(../../../assets/icons/arrow-down.svg) no-repeat left;
+    transform: rotate(90deg);
+  }
+}
+
+.session {
+  display: flex;
+  justify-content: space-between;
+
+  .toggle {
+    align-content: center;
+  }
+}
+
+.info {
+  display: flex;
+  justify-content: space-between;
+}
+
+
+
+

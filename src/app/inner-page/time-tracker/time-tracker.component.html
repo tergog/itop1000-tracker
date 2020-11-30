@@ -1,5 +1,21 @@
-<h1>Time - {{workTime - ( 3 * 1000 * 60 * 60 ) | date : 'HH:mm:ss'}}</h1>
+<div class="time-tracker-wrapper">
+  <div class="title">
+    <div class="cancel-button" (click)="endWorkTime()"></div>
+    <div>{{project.title}}</div>
+  </div>
 
-<button (click)="stopWorkTime()">Pause</button>
-<button (click)="startWorkTime()">Start</button>
-<button (click)="endWorkTime()">End</button>
+  <div class="session">
+    <div>
+      <span>Current - {{workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm:ss'}}</span>
+    </div>
+    <div class="toggle">
+      <mat-slide-toggle [color]="'warn'" (change)="onSlideChange()"><span>{{isWorking ? 'Stop' : 'Start'}}</span>
+      </mat-slide-toggle>
+    </div>
+  </div>
+
+  <div class="info">
+    <p>Today {{project.dayWorkTime + workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm'}} hrs</p>
+    <p>{{project.workTime + workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm'}} of {{project.hoursPerWeek}} hrs</p>
+  </div>
+</div>

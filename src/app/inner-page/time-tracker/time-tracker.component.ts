@@ -1,9 +1,10 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { interval, Observable } from 'rxjs';
+import { interval, Observable, Subscription } from 'rxjs';
 import jwtDecode from 'jwt-decode';
 
 import { ScreenshotService } from '../../shared/services/screenshot.service';
 import { UsersService } from '../../shared/services/users.service';
+import { Project } from '../../shared/models/project.model';
 
 
 @Component({
@@ -12,19 +13,19 @@ import { UsersService } from '../../shared/services/users.service';
   styleUrls: ['./time-tracker.component.scss']
 })
 export class TimeTrackerComponent implements OnInit {
-  @Output() isWorking: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() endWork: EventEmitter<boolean> = new EventEmitter<boolean>();
+
   projectId: number;
+  public project: Project;
   public workTime = 0;
+  public isWorking: boolean;
 
   private secondCount: number = 0;
   private nextScreenshotTime: number;
   private screenshotInterval: number = 0;
 
   private interval$: Observable<any>;
-  private timer;
-
-  //workHours : 2124363
-  // interval : 495
+  public timer: Subscription;
 
   constructor(
     private screenshotService: ScreenshotService,
@@ -32,16 +33,19 @@ export class TimeTrackerComponent implements OnInit {
     ) {}
 
   ngOnInit(): void {
-
     const user: any = jwtDecode(localStorage.getItem('token'));
+    console.log(user);
+
     this.projectId = Number(localStorage.getItem('activeProject'));
-    this.nextScreenshotTime = user.projects[this.projectId].interval || TimeTrackerComponent.getRandomNumber(5, 15) * 60;
-    // this.usersService.updateWorkTime(this.projectId, 0, this.nextScreenshotTime)
-    //   .subscribe(userInfo => {
-    //     localStorage.setItem('token', userInfo.response);
-    //   });
+    this.project = user.projects[this.projectId];
+
+    this.nextScreenshotTime = user.projects[this.projectId].interval || this.getRandomNumber(5, 15) * 60;
+
+    this.usersService.updateWorkTime(this.projectId, 0, this.nextScreenshotTime)
+      .subscribe(userInfo => {
+        localStorage.setItem('token', userInfo.response);
+      });
     this.interval$ = interval(1000);
-    this.startWorkTime();
   }
 
   public startWorkTime() {
@@ -52,26 +56,37 @@ export class TimeTrackerComponent implements OnInit {
       this.secondCount = sec;
       this.workTime += 1000;
     });
+
+    this.isWorking = true;
   }
 
   public endWorkTime() {
-    this.stopWorkTime();
+    this.timer ? this.stopWorkTime() : this.endWork.emit(false);
 
     this.usersService.updateWorkTime(this.projectId, this.workTime, this.nextScreenshotTime)
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
         localStorage.removeItem('activeProject');
-        this.isWorking.emit(false);
+        this.endWork.emit(false);
       });
   }
 
   public stopWorkTime() {
     this.timer.unsubscribe();
     this.nextScreenshotTime = this.nextScreenshotTime - this.secondCount;
+    this.isWorking = false;
+  }
+
+  public onSlideChange() {
+    if (this.timer) {
+      this.timer.closed ? this.startWorkTime() : this.stopWorkTime();
+    } else {
+      this.startWorkTime()
+    }
   }
 
   private takeScreenshot(): void {
-    this.screenshotInterval = TimeTrackerComponent.getRandomNumber(5, 15) * 60;
+    this.screenshotInterval = this.getRandomNumber(5, 15) * 60;
     this.nextScreenshotTime = this.secondCount + this.screenshotInterval;
 
     this.screenshotService.takeScreenshot(this.projectId, this.workTime, this.screenshotInterval )
@@ -80,7 +95,7 @@ export class TimeTrackerComponent implements OnInit {
     });
   }
 
-  private static getRandomNumber(min, max): number {
+  private getRandomNumber(min, max): number {
     let rand = min + Math.random() * (max + 1 - min);
     return Math.floor(rand);
   }

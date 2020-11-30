@@ -1,7 +1,5 @@
 import { app, BrowserWindow } from 'electron';
 import jwtDecode from 'jwt-decode';
-import fetch from 'electron-fetch';
-import FormData =  require('form-data');
 
 
 let win: BrowserWindow;
@@ -16,8 +14,8 @@ app.on('activate', () => {
 
 function createWindow() {
   win = new BrowserWindow({
-    width: 2000,
-    height: 600,
+    width: 350,
+    height: 270,
     // resizable: false,
     useContentSize: true,
     // autoHideMenuBar: true,
@@ -32,22 +30,38 @@ function createWindow() {
   win.webContents.openDevTools();
   let ses = win.webContents.session;
 
+  const {ipcMain} = require('electron')
+  ipcMain.on('onLogin', (event, arg) => {
+    win.setSize(335, 600)
+  })
+  ipcMain.on('onLogout', (event, arg) => {
+    win.setSize(350, 270)
+  })
+
   win.on('close', (e) => {
     updateWorkTimeData()
       .then(data => {
-        const form = new FormData();
-        const body: any = {projectId: data.projectId, workTime: data.workTime, interval: data.interval};
-        const sendData =
+        const postData: any = JSON.stringify({projectId: data.projectId, workTime: data.workTime, interval: data.interval});
 
-        fetch('http://localhost:3000/users/update', {
+        const { net } = require('electron');
+
+        const request = net.request({
           method: 'POST',
-          body: body,
-          headers: {
-            'Authorization': `Bearer ${data.token}`
-          }
+          url: 'http://localhost:3000/users/update',
         })
-      });
+        request.setHeader('Content-Type', 'application/json');
+        request.setHeader('authorization', `Bearer ${data.token}`)
 
+        request.on('response', (response) => {
+          response.on('data', (chunk) => {
+            console.log(`BODY: ${chunk}`)
+          })
+          response.on('end', () => {})
+        })
+
+        request.write(postData)
+        request.end()
+      });
 
         const choice = require('electron').dialog.showMessageBoxSync(win,
           {

@@ -1,13 +1,13 @@
-<div *ngIf="isStarted">
-  <app-time-tracker (isWorking)="endWork()"></app-time-tracker>
+<div class="tracker-page" *ngIf="isStarted">
+  <app-time-tracker (endWork)="endWork()"></app-time-tracker>
 </div>
 
 <div class="projects" *ngIf="!isStarted">
+  <app-project-card *ngFor="let project of projects; let i=index"
+                    (click)="startWork(i)"
+                    [project]="project">
+  </app-project-card>
   <div>
     <button class="logout" (click)="onLogoutClick()">Log out</button>
   </div>
-  <app-project-card
-    class="project-card"
-    (isStarted)="startWork($event)"
-    *ngFor="let project of projects; let i=index" [project]="project" [projectArrayId]="i"></app-project-card>
 </div>

@@ -3,5 +3,7 @@ export interface Project {
   title: string;
   employerId: string;
   workTime: number;
+  dayWorkTime: number;
+  hoursPerWeek: number;
   interval: number;
 }

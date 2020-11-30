@@ -1,13 +1,24 @@
+.tracker-page {
+  height: 100vh;
+}
+
 .projects {
-  padding-top: 100px;
-  width: 700px;
+  width: 90vw;
+  height: 100vh;
+
+  margin: 0 auto;
+  padding-top: 5px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .logout {
-
   background: #BDBDBD;
   box-shadow: inset 0 6px 5px rgba(255, 255, 255, 0.3);
   border-radius: 30px;
+  border: none;
 
   color: #FFFFFF;
   font-weight: 500;
@@ -16,12 +27,16 @@
   text-align: center;
   text-transform: capitalize;
 
-  margin: 10px 20px;
+  margin: 10px;
   width: 120px;
   height: 30px;
 
   &:active, &:focus {
     outline: none !important;
+  }
+
+  &:active {
+    box-shadow: 0 6px 5px rgba(255, 255, 255, 0.3);
   }
 }
 

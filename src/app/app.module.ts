@@ -11,6 +11,7 @@ import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/login/login.component';
 import { InnerPageModule } from './inner-page/inner-page.module';
 import { TokenInterceptor } from './shared/interceptors/token.interceptor';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 
 
@@ -24,7 +25,8 @@ import { TokenInterceptor } from './shared/interceptors/token.interceptor';
     BrowserModule,
     HttpClientModule,
     ReactiveFormsModule,
-    InnerPageModule
+    InnerPageModule,
+    NoopAnimationsModule,
   ],
   providers: [
     ElectronService,

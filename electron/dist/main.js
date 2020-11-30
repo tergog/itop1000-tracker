@@ -38,7 +38,6 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var jwt_decode_1 = require("jwt-decode");
-var electron_fetch_1 = require("electron-fetch");
 var win;
 electron_1.app.on('ready', createWindow);
 electron_1.app.on('activate', function () {
@@ -48,8 +47,8 @@ electron_1.app.on('activate', function () {
 });
 function createWindow() {
     win = new electron_1.BrowserWindow({
-        width: 2000,
-        height: 600,
+        width: 350,
+        height: 270,
         // resizable: false,
         useContentSize: true,
         // autoHideMenuBar: true,
@@ -61,17 +60,32 @@ function createWindow() {
     win.loadURL('http://localhost:4200');
     win.webContents.openDevTools();
     var ses = win.webContents.session;
+    var ipcMain = require('electron').ipcMain;
+    ipcMain.on('onLogin', function (event, arg) {
+        win.setSize(335, 600);
+    });
+    ipcMain.on('onLogout', function (event, arg) {
+        win.setSize(350, 270);
+    });
     win.on('close', function (e) {
         updateWorkTimeData()
             .then(function (data) {
-            var body = { projectId: data.projectId, workTime: data.workTime, interval: data.interval };
-            electron_fetch_1.default('http://localhost:3000/users/update', {
+            var postData = JSON.stringify({ projectId: data.projectId, workTime: data.workTime, interval: data.interval });
+            var net = require('electron').net;
+            var request = net.request({
                 method: 'POST',
-                body: body,
-                headers: {
-                    'Authorization': "Bearer " + data.token
-                }
+                url: 'http://localhost:3000/users/update',
             });
+            request.setHeader('Content-Type', 'application/json');
+            request.setHeader('authorization', "Bearer " + data.token);
+            request.on('response', function (response) {
+                response.on('data', function (chunk) {
+                    console.log("BODY: " + chunk);
+                });
+                response.on('end', function () { });
+            });
+            request.write(postData);
+            request.end();
         });
         var choice = require('electron').dialog.showMessageBoxSync(win, {
             'type': 'question',
