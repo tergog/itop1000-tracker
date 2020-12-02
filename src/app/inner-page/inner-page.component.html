@@ -2,11 +2,24 @@
   <app-time-tracker (endWork)="endWork()"></app-time-tracker>
 </div>
 
-<div class="projects" *ngIf="!isStarted">
-  <app-project-card *ngFor="let project of projects; let i=index"
-                    (click)="startWork(i)"
-                    [project]="project">
-  </app-project-card>
+<div class="projects-page" *ngIf="!isStarted">
+  <div>
+    <div class="projects-header">
+      <div>
+        <span>Projects</span>
+      </div>
+      <div>
+        <span>hours/week</span>
+      </div>
+    </div>
+    <hr>
+  </div>
+  <div class="project-cards">
+    <app-project-card *ngFor="let project of projects; let i=index"
+                      (click)="startWork(i)"
+                      [project]="project">
+    </app-project-card>
+  </div>
   <div>
     <button class="logout" (click)="onLogoutClick()">Log out</button>
   </div>

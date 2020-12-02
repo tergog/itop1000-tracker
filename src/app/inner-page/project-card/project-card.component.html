@@ -1,8 +1,14 @@
 <div class="project">
   <div>
-    <h2 class="title">{{project.title}}</h2>
+    <p class="title">{{project.title}}</p>
   </div>
-  <div>
-    {{project.workTime - (3 * 1000 * 60 * 60) | date : 'H:mm'}} / {{project.hoursPerWeek}} hrs
+  <div class="project-time">
+    <span>{{project.workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm'}}</span>
+    <div class="project-time__progressbar__full">
+      <div class="project-time__progressbar__filled"
+           [ngStyle]="{width: (project.workTime) / ((project.hoursPerWeek * 60 * 60 * 1000) / 100) + '%'}">
+      </div>
+    </div>
+    <span>of {{project.hoursPerWeek}} hrs</span>
   </div>
 </div>

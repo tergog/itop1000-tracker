@@ -1,7 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { UsersService } from '../../shared/services/users.service';
-import { ElectronService } from 'ngx-electron';
 
 @Component({
   selector: 'app-login',
@@ -19,8 +18,7 @@ export class LoginComponent implements OnInit {
   @Output() isAuth: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   constructor(private fb: FormBuilder,
-              private usersService: UsersService,
-              private electronService: ElectronService) { }
+              private usersService: UsersService) { }
 
   ngOnInit(): void {
   }
@@ -29,7 +27,6 @@ export class LoginComponent implements OnInit {
     this.usersService.login(this.authForm.value).subscribe(
       (userInfo) => {
         localStorage.setItem("token", userInfo.token);
-        this.electronService.ipcRenderer.send('onLogin')
         this.isAuth.emit(true);
       },
       err => this.errorMessage = err.error.message

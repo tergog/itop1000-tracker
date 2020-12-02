@@ -48,7 +48,7 @@ electron_1.app.on('activate', function () {
 function createWindow() {
     win = new electron_1.BrowserWindow({
         width: 350,
-        height: 270,
+        height: 600,
         // resizable: false,
         useContentSize: true,
         // autoHideMenuBar: true,
@@ -60,13 +60,6 @@ function createWindow() {
     win.loadURL('http://localhost:4200');
     win.webContents.openDevTools();
     var ses = win.webContents.session;
-    var ipcMain = require('electron').ipcMain;
-    ipcMain.on('onLogin', function (event, arg) {
-        win.setSize(335, 600);
-    });
-    ipcMain.on('onLogout', function (event, arg) {
-        win.setSize(350, 270);
-    });
     win.on('close', function (e) {
         updateWorkTimeData()
             .then(function (data) {

@@ -15,7 +15,7 @@ app.on('activate', () => {
 function createWindow() {
   win = new BrowserWindow({
     width: 350,
-    height: 270,
+    height: 600,
     // resizable: false,
     useContentSize: true,
     // autoHideMenuBar: true,
@@ -29,14 +29,6 @@ function createWindow() {
 
   win.webContents.openDevTools();
   let ses = win.webContents.session;
-
-  const {ipcMain} = require('electron')
-  ipcMain.on('onLogin', (event, arg) => {
-    win.setSize(335, 600)
-  })
-  ipcMain.on('onLogout', (event, arg) => {
-    win.setSize(350, 270)
-  })
 
   win.on('close', (e) => {
     updateWorkTimeData()

@@ -2,16 +2,41 @@
   height: 100vh;
 }
 
-.projects {
+.projects-page {
   width: 90vw;
   height: 100vh;
 
   margin: 0 auto;
-  padding-top: 5px;
 
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.projects-header {
+  padding: 15px 10px 5px;
+  display: flex;
+  justify-content: space-between;
+
+  font-family: Raleway;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 16px;
+  text-align: center;
+  color: #AD262D;
+}
+
+.project-cards {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+
+  app-project-card:hover {
+    cursor: pointer;
+  }
 }
 
 .logout {
@@ -30,6 +55,10 @@
   margin: 10px;
   width: 120px;
   height: 30px;
+
+  &:hover {
+    cursor: pointer;
+  }
 
   &:active, &:focus {
     outline: none !important;

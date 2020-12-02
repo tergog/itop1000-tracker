@@ -6,11 +6,27 @@
   padding-top: 20px;
   display: flex;
 
+  font-family: Work Sans;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+
+  text-align: center;
+  text-transform: uppercase;
+
+  color: #EE1C41;
+
+
   .cancel-button {
     width: 30px;
     height: 30px;
     background: url(../../../assets/icons/arrow-down.svg) no-repeat left;
     transform: rotate(90deg);
+  }
+
+  div:hover {
+    cursor: pointer;
   }
 }
 
