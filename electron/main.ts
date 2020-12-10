@@ -16,10 +16,11 @@ function createWindow() {
   win = new BrowserWindow({
     width: 350,
     height: 600,
-    // resizable: false,
+    resizable: false,
     useContentSize: true,
-    // autoHideMenuBar: true,
+    autoHideMenuBar: true,
     webPreferences: {
+      devTools: false,
       nodeIntegration: true,
       enableRemoteModule: true
     }

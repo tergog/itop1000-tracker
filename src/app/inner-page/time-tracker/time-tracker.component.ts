@@ -1,10 +1,11 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { interval, Observable, Subscription } from 'rxjs';
 import jwtDecode from 'jwt-decode';
 
 import { ScreenshotService } from '../../shared/services/screenshot.service';
 import { UsersService } from '../../shared/services/users.service';
 import { Project } from '../../shared/models/project.model';
+import { ScreenshotModel } from '../../shared/models/screenshot.model';
 
 
 @Component({
@@ -17,6 +18,7 @@ export class TimeTrackerComponent implements OnInit {
 
   projectId: number;
   public project: Project;
+  public lastScreenshot: ScreenshotModel;
   public workTime = 0;
   public isWorking: boolean;
 
@@ -30,6 +32,7 @@ export class TimeTrackerComponent implements OnInit {
   constructor(
     private screenshotService: ScreenshotService,
     private usersService: UsersService,
+    private cdr: ChangeDetectorRef
     ) {}
 
   ngOnInit(): void {
@@ -38,6 +41,7 @@ export class TimeTrackerComponent implements OnInit {
 
     this.projectId = Number(localStorage.getItem('activeProject'));
     this.project = user.projects[this.projectId];
+    this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
 
     this.nextScreenshotTime = user.projects[this.projectId].interval || this.getRandomNumber(5, 15) * 60;
 
@@ -63,7 +67,7 @@ export class TimeTrackerComponent implements OnInit {
   public endWorkTime() {
     this.timer ? this.stopWorkTime() : this.endWork.emit(false);
 
-    this.usersService.updateWorkTime(this.projectId, this.workTime, this.nextScreenshotTime)
+    this.usersService.updateWorkTime(this.projectId, this.workTime, Math.abs(this.nextScreenshotTime))
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
         localStorage.removeItem('activeProject');
@@ -74,6 +78,9 @@ export class TimeTrackerComponent implements OnInit {
   public stopWorkTime() {
     this.timer.unsubscribe();
     this.nextScreenshotTime = this.nextScreenshotTime - this.secondCount;
+    if(this.nextScreenshotTime <= 0) {
+      debugger;
+    }
     this.isWorking = false;
   }
 
@@ -89,9 +96,13 @@ export class TimeTrackerComponent implements OnInit {
     this.screenshotInterval = this.getRandomNumber(5, 15) * 60;
     this.nextScreenshotTime = this.secondCount + this.screenshotInterval;
 
-    this.screenshotService.takeScreenshot(this.projectId, this.workTime, this.screenshotInterval )
+    this.screenshotService.takeScreenshot(this.projectId, this.workTime, Math.abs(this.nextScreenshotTime) )
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
+
+        const user: any = jwtDecode(userInfo.response);
+        this.lastScreenshot = user.projects[this.projectId].screenshots[user.projects[this.projectId].screenshots.length - 1];
+        // this.cdr.detectChanges();
     });
   }
 
