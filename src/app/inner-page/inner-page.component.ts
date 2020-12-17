@@ -17,7 +17,7 @@ export class InnerPageComponent implements OnInit {
 
   ngOnInit(): void {
    const userInfo: any = jwtDecode(localStorage.getItem('token'));
-   this.projects = userInfo.projects;
+   this.projects = userInfo.activeProjects;
    this.userId = userInfo.id;
   }
 

@@ -10,10 +10,10 @@ export class UsersService {
   constructor(private http: HttpClient) { }
 
   public login(data: object): Observable<any> {
-    return this.http.post<any>(`${environment.apiURL}/users/auth`, data);
+    return this.http.post<any>(`${environment.apiURL}/accounts/auth`, data);
   }
 
-  public updateWorkTime(projectId: number, workTime: number, interval: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiURL}/users/update`, {projectId, workTime, interval});
+  public updateWorkTime(projectId: number, workTime: number): Observable<any> {
+    return this.http.post<any>(`${environment.apiURL}/accounts/update`, {projectId, workTime});
   }
 }

@@ -4,9 +4,9 @@ export interface Project {
   _id: string;
   title: string;
   employerId: string;
+  screenshotsPerHour: number;
   workTime: number;
   dayWorkTime: number;
   hoursPerWeek: number;
-  interval: number;
   screenshots: Array<ScreenshotModel>;
 }

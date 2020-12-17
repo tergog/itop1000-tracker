@@ -9,7 +9,11 @@ export class ScreenshotService {
 
   constructor(private http: HttpClient) { }
 
-  public takeScreenshot(projectId: number, workTime: number, interval: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiURL}/users/screenshot`, {projectId, interval, workTime});
+  public takeScreenshot(projectId: number, workTime: number): Observable<any> {
+    return this.http.post<any>(`${environment.apiURL}/accounts/screenshot`, {projectId, workTime});
+  }
+
+  public reserveScreenshot(): Observable<string> {
+    return this.http.get<string>(`${environment.apiURL}/accounts/reserve-screenshot`);
   }
 }

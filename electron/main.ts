@@ -16,17 +16,17 @@ function createWindow() {
   win = new BrowserWindow({
     width: 350,
     height: 600,
-    resizable: false,
+    // resizable: false,
     useContentSize: true,
-    autoHideMenuBar: true,
+    // autoHideMenuBar: true,
     webPreferences: {
-      devTools: false,
+      // devTools: false,
       nodeIntegration: true,
       enableRemoteModule: true
     }
   });
 
-  win.loadURL('http://localhost:4200');
+  win.loadURL('http://localhost:4500');
 
   win.webContents.openDevTools();
   let ses = win.webContents.session;

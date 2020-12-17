@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { interval, Observable, Subscription } from 'rxjs';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { BehaviorSubject, interval, Subscription } from 'rxjs';
 import jwtDecode from 'jwt-decode';
 
 import { ScreenshotService } from '../../shared/services/screenshot.service';
@@ -16,94 +16,133 @@ import { ScreenshotModel } from '../../shared/models/screenshot.model';
 export class TimeTrackerComponent implements OnInit {
   @Output() endWork: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  projectId: number;
+  private projectId: number;
   public project: Project;
   public lastScreenshot: ScreenshotModel;
   public workTime = 0;
-  public isWorking: boolean;
+  public isWorking = false;
 
-  private secondCount: number = 0;
+  private secondCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   private nextScreenshotTime: number;
-  private screenshotInterval: number = 0;
+  private screenshotDuration: number = 0;
+  private betweenScreenshots: number;
 
-  private interval$: Observable<any>;
+  private screenshotInterval$: Subscription;
   public timer: Subscription;
 
   constructor(
     private screenshotService: ScreenshotService,
     private usersService: UsersService,
-    private cdr: ChangeDetectorRef
-    ) {}
+  ) {
+  }
+
 
   ngOnInit(): void {
     const user: any = jwtDecode(localStorage.getItem('token'));
-    console.log(user);
 
     this.projectId = Number(localStorage.getItem('activeProject'));
-    this.project = user.projects[this.projectId];
+    this.project = user.activeProjects[this.projectId];
+
     this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
 
-    this.nextScreenshotTime = user.projects[this.projectId].interval || this.getRandomNumber(5, 15) * 60;
+    this.betweenScreenshots = (60 / this.project.screenshotsPerHour);
+    this.screenshotDuration = (60 - new Date().getMinutes()) % this.betweenScreenshots;
 
-    this.usersService.updateWorkTime(this.projectId, 0, this.nextScreenshotTime)
-      .subscribe(userInfo => {
-        localStorage.setItem('token', userInfo.response);
-      });
-    this.interval$ = interval(1000);
-  }
+    console.log(user);
 
-  public startWorkTime() {
-    this.timer = this.interval$.subscribe((sec) => {
-      if (this.secondCount === this.nextScreenshotTime) {
+    this.secondCount$.subscribe(sec => {
+      console.log(sec, this.nextScreenshotTime);
+      if (sec === this.nextScreenshotTime) {
         this.takeScreenshot();
       }
-      this.secondCount = sec;
-      this.workTime += 1000;
     });
+  }
 
+  public startWorkTime(): void {
+
+    const fromLastBetween = (this.betweenScreenshots - this.screenshotDuration) || (this.betweenScreenshots - ((60 - new Date().getMinutes()) % this.betweenScreenshots));
+    const fromLastScreenshot =( Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 / 60;
+
+    console.log(fromLastBetween, fromLastScreenshot);
+
+    fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
+
+
+    if (!this.screenshotInterval$) {
+      this.workCountdown();
+      setTimeout(() => {
+        this.createScreenshotInterval();
+      }, 1000 * 60 * (this.screenshotDuration));
+    } else {
+      this.workCountdown();
+    }
     this.isWorking = true;
   }
 
-  public endWorkTime() {
+  public endWorkTime(): void {
     this.timer ? this.stopWorkTime() : this.endWork.emit(false);
 
-    this.usersService.updateWorkTime(this.projectId, this.workTime, Math.abs(this.nextScreenshotTime))
+    this.usersService.updateWorkTime(this.projectId, this.workTime)
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
         localStorage.removeItem('activeProject');
+
+        if (this.screenshotInterval$) {
+          this.screenshotInterval$.unsubscribe();
+        }
+
         this.endWork.emit(false);
       });
   }
 
-  public stopWorkTime() {
+  public stopWorkTime(): void {
     this.timer.unsubscribe();
-    this.nextScreenshotTime = this.nextScreenshotTime - this.secondCount;
-    if(this.nextScreenshotTime <= 0) {
-      debugger;
-    }
     this.isWorking = false;
   }
 
-  public onSlideChange() {
+  public onSlideChange(): void {
     if (this.timer) {
       this.timer.closed ? this.startWorkTime() : this.stopWorkTime();
     } else {
-      this.startWorkTime()
+      this.startWorkTime();
     }
   }
 
-  private takeScreenshot(): void {
-    this.screenshotInterval = this.getRandomNumber(5, 15) * 60;
-    this.nextScreenshotTime = this.secondCount + this.screenshotInterval;
+  private createScreenshotInterval(): void {
+    this.updateCountdown();
+    this.screenshotInterval$ = interval(1000 * 60 * this.betweenScreenshots).subscribe(() => {
+      this.updateCountdown()
+    });
+  }
 
-    this.screenshotService.takeScreenshot(this.projectId, this.workTime, Math.abs(this.nextScreenshotTime) )
+  private workCountdown(): void {
+    this.timer = interval(1000).subscribe((sec) => {
+      this.secondCount$.next(sec);
+      this.workTime += 1000;
+    });
+  }
+
+  private updateCountdown(): void {
+    this.timer.unsubscribe();
+    this.secondCount$.next(0);
+
+    this.setNextScreenshotTime();
+    this.screenshotDuration = this.betweenScreenshots;
+    this.isWorking && this.workCountdown()
+  }
+
+  private setNextScreenshotTime(): void {
+    this.nextScreenshotTime = this.getRandomNumber(1, (this.screenshotDuration || this.betweenScreenshots) - 1) * 60;
+  }
+
+  private takeScreenshot(): void {
+    this.screenshotService.takeScreenshot(this.projectId, this.workTime)
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
 
         const user: any = jwtDecode(userInfo.response);
-        this.lastScreenshot = user.projects[this.projectId].screenshots[user.projects[this.projectId].screenshots.length - 1];
-        // this.cdr.detectChanges();
-    });
+        this.lastScreenshot = user.activeProjects[this.projectId].screenshots[user.activeProjects[this.projectId].screenshots.length - 1];
+      });
   }
 
   private getRandomNumber(min, max): number {
