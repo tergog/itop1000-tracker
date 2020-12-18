@@ -27,6 +27,8 @@ export class InnerPageComponent implements OnInit {
   }
 
   public endWork() {
+    const userInfo: any = jwtDecode(localStorage.getItem('token'));
+    this.projects = userInfo.activeProjects;
     this.isStarted = false;
   }
 

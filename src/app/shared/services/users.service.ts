@@ -13,7 +13,7 @@ export class UsersService {
     return this.http.post<any>(`${environment.apiURL}/accounts/auth`, data);
   }
 
-  public updateWorkTime(projectId: number, workTime: number): Observable<any> {
+  public updateWorkTime(projectId: number, workTime: object): Observable<any> {
     return this.http.post<any>(`${environment.apiURL}/accounts/update`, {projectId, workTime});
   }
 }

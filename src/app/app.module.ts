@@ -12,6 +12,7 @@ import { LoginComponent } from './auth/login/login.component';
 import { InnerPageModule } from './inner-page/inner-page.module';
 import { TokenInterceptor } from './shared/interceptors/token.interceptor';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { WorkTimeService } from './shared/services/work-time.service';
 
 
 
@@ -32,6 +33,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
     ElectronService,
     ScreenshotService,
     UsersService,
+    WorkTimeService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,

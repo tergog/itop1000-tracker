@@ -6,6 +6,7 @@ import { ScreenshotService } from '../../shared/services/screenshot.service';
 import { UsersService } from '../../shared/services/users.service';
 import { Project } from '../../shared/models/project.model';
 import { ScreenshotModel } from '../../shared/models/screenshot.model';
+import { WorkTimeService } from '../../shared/services/work-time.service';
 
 
 @Component({
@@ -27,12 +28,13 @@ export class TimeTrackerComponent implements OnInit {
   private screenshotDuration: number = 0;
   private betweenScreenshots: number;
 
-  private screenshotInterval$: Subscription;
+  private screenshotInterval: Subscription;
   public timer: Subscription;
 
   constructor(
     private screenshotService: ScreenshotService,
     private usersService: UsersService,
+    public workTimeService: WorkTimeService
   ) {
   }
 
@@ -43,15 +45,14 @@ export class TimeTrackerComponent implements OnInit {
     this.projectId = Number(localStorage.getItem('activeProject'));
     this.project = user.activeProjects[this.projectId];
 
+    this.workTimeService.setWorkTime(this.project.workTime);
+
     this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
 
     this.betweenScreenshots = (60 / this.project.screenshotsPerHour);
     this.screenshotDuration = (60 - new Date().getMinutes()) % this.betweenScreenshots;
 
-    console.log(user);
-
     this.secondCount$.subscribe(sec => {
-      console.log(sec, this.nextScreenshotTime);
       if (sec === this.nextScreenshotTime) {
         this.takeScreenshot();
       }
@@ -61,14 +62,11 @@ export class TimeTrackerComponent implements OnInit {
   public startWorkTime(): void {
 
     const fromLastBetween = (this.betweenScreenshots - this.screenshotDuration) || (this.betweenScreenshots - ((60 - new Date().getMinutes()) % this.betweenScreenshots));
-    const fromLastScreenshot =( Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 / 60;
-
-    console.log(fromLastBetween, fromLastScreenshot);
+    const fromLastScreenshot = (Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 / 60;
 
     fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
 
-
-    if (!this.screenshotInterval$) {
+    if (!this.screenshotInterval) {
       this.workCountdown();
       setTimeout(() => {
         this.createScreenshotInterval();
@@ -82,13 +80,15 @@ export class TimeTrackerComponent implements OnInit {
   public endWorkTime(): void {
     this.timer ? this.stopWorkTime() : this.endWork.emit(false);
 
-    this.usersService.updateWorkTime(this.projectId, this.workTime)
+    this.workTimeService.addWorkTime(this.workTime);
+
+    this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime)
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
         localStorage.removeItem('activeProject');
 
-        if (this.screenshotInterval$) {
-          this.screenshotInterval$.unsubscribe();
+        if (this.screenshotInterval) {
+          this.screenshotInterval.unsubscribe();
         }
 
         this.endWork.emit(false);
@@ -110,8 +110,8 @@ export class TimeTrackerComponent implements OnInit {
 
   private createScreenshotInterval(): void {
     this.updateCountdown();
-    this.screenshotInterval$ = interval(1000 * 60 * this.betweenScreenshots).subscribe(() => {
-      this.updateCountdown()
+    this.screenshotInterval = interval(1000 * 60 * this.betweenScreenshots).subscribe(() => {
+      this.updateCountdown();
     });
   }
 
@@ -119,6 +119,7 @@ export class TimeTrackerComponent implements OnInit {
     this.timer = interval(1000).subscribe((sec) => {
       this.secondCount$.next(sec);
       this.workTime += 1000;
+      this.workTimeService.addWorkTime(1000);
     });
   }
 
@@ -128,15 +129,19 @@ export class TimeTrackerComponent implements OnInit {
 
     this.setNextScreenshotTime();
     this.screenshotDuration = this.betweenScreenshots;
-    this.isWorking && this.workCountdown()
+    this.isWorking && this.workCountdown();
   }
 
   private setNextScreenshotTime(): void {
-    this.nextScreenshotTime = this.getRandomNumber(1, (this.screenshotDuration || this.betweenScreenshots) - 1) * 60;
+
+    let maxNumber = this.screenshotDuration === this.betweenScreenshots ? this.screenshotDuration-- : this.screenshotDuration;
+
+    this.nextScreenshotTime = this.getRandomNumber(1, (maxNumber || this.betweenScreenshots - 1)) * 60;
+    console.log(this.nextScreenshotTime)
   }
 
   private takeScreenshot(): void {
-    this.screenshotService.takeScreenshot(this.projectId, this.workTime)
+    this.screenshotService.takeScreenshot(this.projectId, this.workTimeService.workTime)
       .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
 
@@ -149,5 +154,4 @@ export class TimeTrackerComponent implements OnInit {
     let rand = min + Math.random() * (max + 1 - min);
     return Math.floor(rand);
   }
-
 }
