@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ElectronService } from 'ngx-electron';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +9,9 @@ import { Component, OnInit } from '@angular/core';
 export class AppComponent implements OnInit {
   title = 'time-tracker';
   isAuth: boolean = false;
+
+  constructor() {
+  }
 
   ngOnInit() {
     this.isAuth = !!localStorage.getItem('token');
@@ -21,6 +25,5 @@ export class AppComponent implements OnInit {
     localStorage.removeItem('token');
     this.isAuth = false;
   }
-
 
 }

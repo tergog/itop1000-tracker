@@ -7,6 +7,7 @@ import { UsersService } from '../../shared/services/users.service';
 import { Project } from '../../shared/models/project.model';
 import { ScreenshotModel } from '../../shared/models/screenshot.model';
 import { WorkTimeService } from '../../shared/services/work-time.service';
+import { ElectronService } from 'ngx-electron';
 
 
 @Component({
@@ -32,9 +33,10 @@ export class TimeTrackerComponent implements OnInit {
   public timer: Subscription;
 
   constructor(
+    private electronService: ElectronService,
     private screenshotService: ScreenshotService,
     private usersService: UsersService,
-    public workTimeService: WorkTimeService
+    public workTimeService: WorkTimeService,
   ) {
   }
 
@@ -63,8 +65,13 @@ export class TimeTrackerComponent implements OnInit {
 
     const fromLastBetween = (this.betweenScreenshots - this.screenshotDuration) || (this.betweenScreenshots - ((60 - new Date().getMinutes()) % this.betweenScreenshots));
     const fromLastScreenshot = (Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 / 60;
-
     fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
+
+    this.electronService.ipcRenderer.send('mouse-event-channel', 'on');
+    this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
+      console.log(resp);
+    });
+
 
     if (!this.screenshotInterval) {
       this.workCountdown();
@@ -98,6 +105,7 @@ export class TimeTrackerComponent implements OnInit {
   public stopWorkTime(): void {
     this.timer.unsubscribe();
     this.isWorking = false;
+    this.electronService.ipcRenderer.send('mouse-event-channel', 'off');
   }
 
   public onSlideChange(): void {

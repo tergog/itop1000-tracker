@@ -11,6 +11,18 @@
     "e2e": "ng e2e",
     "electron": "ng build --base-href ./ && tsc --p electron && electron ."
   },
+  "iohook": {
+    "targets": [
+      "node-83",
+      "electron-82"
+    ],
+    "platforms": [
+      "linux"
+    ],
+    "arches": [
+      "x64"
+    ]
+  },
   "private": true,
   "dependencies": {
     "@angular/animations": "~10.2.0",
@@ -23,9 +35,9 @@
     "@angular/platform-browser": "~10.2.0",
     "@angular/platform-browser-dynamic": "~10.2.0",
     "@angular/router": "~10.2.0",
+    "iohook": "^0.7.2",
     "jwt-decode": "^3.1.1",
     "ngx-electron": "^2.2.0",
-    "robotjs": "^0.6.0",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"

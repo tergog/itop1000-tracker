@@ -38,6 +38,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var jwt_decode_1 = require("jwt-decode");
+var rxjs_1 = require("rxjs");
 var win;
 electron_1.app.on('ready', createWindow);
 electron_1.app.on('activate', function () {
@@ -61,10 +62,26 @@ function createWindow() {
     win.loadURL('http://localhost:4500');
     win.webContents.openDevTools();
     var ses = win.webContents.session;
+    var mouseInterval;
+    electron_1.ipcMain.on('mouse-event-channel', function (event, message) {
+        var lastMousePos = { x: 0, y: 0 };
+        console.log(message);
+        if (message === 'off') {
+            mouseInterval.unsubscribe();
+            return;
+        }
+        if (message === 'on') {
+            mouseInterval = rxjs_1.interval(1000 * 10).subscribe(function () {
+                var mousePos = electron_1.screen.getCursorScreenPoint();
+                event.sender.send('mouse-event-channel', lastMousePos.x !== mousePos.x || lastMousePos.y !== mousePos.y);
+                lastMousePos = mousePos;
+            });
+        }
+    });
     win.on('close', function (e) {
         updateWorkTimeData()
             .then(function (data) {
-            var postData = JSON.stringify({ projectId: data.projectId, workTime: data.workTime, interval: data.interval });
+            var postData = JSON.stringify({ projectId: data.projectId, workTime: data.workTime });
             var net = require('electron').net;
             var request = net.request({
                 method: 'POST',
@@ -76,7 +93,8 @@ function createWindow() {
                 response.on('data', function (chunk) {
                     console.log("BODY: " + chunk);
                 });
-                response.on('end', function () { });
+                response.on('end', function () {
+                });
             });
             request.write(postData);
             request.end();
@@ -100,7 +118,7 @@ function createWindow() {
 }
 function updateWorkTimeData() {
     return __awaiter(this, void 0, void 0, function () {
-        var localStorageData, user, projectId, project, workTime, interval, token;
+        var localStorageData, user, projectId, workTime, token;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, win.webContents.executeJavaScript('({...localStorage});')
@@ -114,11 +132,9 @@ function updateWorkTimeData() {
                     }
                     user = jwt_decode_1.default(localStorageData.token);
                     projectId = Number(localStorageData.activeProject);
-                    project = user.projects[projectId];
-                    workTime = new Date(Date.now()).getTime() - new Date(project.dateUpdated).getTime();
-                    interval = Math.floor(project.interval - (workTime / 1000));
+                    workTime = user.projects[projectId].workTime;
                     token = localStorageData.token;
-                    return [2 /*return*/, { projectId: projectId, workTime: workTime, interval: interval, token: token }];
+                    return [2 /*return*/, { projectId: projectId, workTime: workTime, token: token }];
             }
         });
     });
