@@ -24,8 +24,8 @@ export class WorkTimeService {
 
     this.workTime = workTimeObject;
 
-    this.setStartWeek();
-    this.setStartDay();
+    this.startWeek = this.getStartWeek();
+    this.startDay = this.getStartDay();
 
     if (this.isObjectEmpty(this.workTime)) {
       this.workTime = {
@@ -45,19 +45,38 @@ export class WorkTimeService {
   }
 
   public addWorkTime(sec: number): void {
+    if (new Date().getDay() !== new Date(this.lastDayKey).getDay()) {
+      this.startWeek = this.getStartWeek();
+      this.startDay = this.getStartDay();
+      this.updateWeekDay();
+      this.setTodayWorkTime();
+      this.setWeekWorkTime();
+    }
     this.workTime[this.lastWeekKey][this.lastDayKey] += sec;
   }
 
 
   //init functions
 
+  public getStartWeek(): number {
+    const startWeekDate = (new Date().getDate() - new Date().getDay()) + 1;
+    return new Date(new Date().getFullYear(), new Date().getMonth(), startWeekDate).getTime();
+  }
+
+  public getStartDay(): number {
+    return new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
+  }
+
   private updateWeekDay():void {
     if (Number(this.lastWeekKey) !== this.startWeek) {
       this.workTime[this.startWeek] = {[this.startDay]: 0};
+      this.lastWeekKey = this.startWeek;
+      this.lastDayKey = this.startDay;
     }
 
     if (Number(this.lastDayKey) !== this.startDay) {
       this.workTime[this.lastWeekKey][this.startDay] = 0;
+      this.lastDayKey = this.startDay;
     }
   }
 
@@ -75,20 +94,11 @@ export class WorkTimeService {
     this.week = weekTime;
   }
 
-  private setStartWeek(): void {
-    const startWeekDate = (new Date().getDate() - new Date().getDay()) + 1;
-    this.startWeek = new Date(new Date().getFullYear(), new Date().getMonth(), startWeekDate).getTime();
-  }
-
-  private setStartDay(): void {
-    this.startDay = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
-  }
-
 
   // helpers
 
 
-  private getLastKey(obj: object): any {
+  public getLastKey(obj: object): any {
     const keys = Object.keys(obj);
     return keys[keys.length - 1];
   }

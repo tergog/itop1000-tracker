@@ -133,7 +133,6 @@ export class TimeTrackerComponent implements OnInit {
   }
 
   private setNextScreenshotTime(): void {
-
     let maxNumber = this.screenshotDuration === this.betweenScreenshots ? this.screenshotDuration-- : this.screenshotDuration;
 
     this.nextScreenshotTime = this.getRandomNumber(1, (maxNumber || this.betweenScreenshots - 1)) * 60;

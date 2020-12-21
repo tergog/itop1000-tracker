@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Project } from '../../shared/models/project.model';
+import { WorkTimeService } from '../../shared/services/work-time.service';
 
 @Component({
   selector: 'app-project-card',
@@ -11,14 +12,19 @@ export class ProjectCardComponent implements OnInit {
   @Input() project: Project;
   public weekWorkTime: number = 0;
 
-  constructor() { }
+  constructor(private workTimeService: WorkTimeService) { }
 
   ngOnInit(): void {
-    const weekKeys = Object.keys(this.project.workTime);
-    const lastWeekKey = Number(weekKeys[weekKeys.length - 1]);
+    const lastWeekKey = Number(this.workTimeService.getLastKey(this.project.workTime));
 
-    for (let day in this.project.workTime[lastWeekKey]) {
-      this.weekWorkTime += this.project.workTime[lastWeekKey][day];
+    const startWeek = this.workTimeService.getStartWeek();
+
+    if (lastWeekKey === startWeek) {
+      for (let day in this.project.workTime[lastWeekKey]) {
+        this.weekWorkTime += this.project.workTime[lastWeekKey][day];
+      }
+    } else {
+      this.weekWorkTime = 0;
     }
   }
 
