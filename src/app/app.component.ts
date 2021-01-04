@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { ElectronService } from 'ngx-electron';
+import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -7,21 +6,21 @@ import { ElectronService } from 'ngx-electron';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  title = 'time-tracker';
-  isAuth: boolean = false;
+  title = 'front';
+  isAuth: boolean;
 
   constructor() {
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.isAuth = !!localStorage.getItem('token');
   }
 
-  onLogin() {
+  onLogin(): void {
     this.isAuth = true;
   }
 
-  onLogoutClick() {
+  onLogoutClick(): void {
     localStorage.removeItem('token');
     this.isAuth = false;
   }

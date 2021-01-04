@@ -1,8 +1,8 @@
-export interface workTimeModel {
- [key: string]: weekWorkTimeModel
+export interface WorkTimeModel {
+ [key: string]: WeekWorkTimeModel;
 }
 
-export interface weekWorkTimeModel {
-  [key: string]: number
+export interface WeekWorkTimeModel {
+  [key: string]: number;
 }
 

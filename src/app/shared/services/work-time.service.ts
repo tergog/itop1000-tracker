@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 
-import { workTimeModel } from '../models/work-time.model';
+import { WorkTimeModel } from '../models/work-time.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WorkTimeService {
 
-  public workTime: workTimeModel = {};
+  public workTime: WorkTimeModel = {};
   public today = 0;
   public week = 0;
 
@@ -20,7 +20,7 @@ export class WorkTimeService {
   }
 
 
-  public setWorkTime(workTimeObject: workTimeModel): void {
+  public setWorkTime(workTimeObject: WorkTimeModel): void {
 
     this.workTime = workTimeObject;
 
@@ -56,7 +56,7 @@ export class WorkTimeService {
   }
 
 
-  //init functions
+  // init functions
 
   public getStartWeek(): number {
     const startWeekDate = (new Date().getDate() - new Date().getDay()) + 1;
@@ -87,7 +87,7 @@ export class WorkTimeService {
   private setWeekWorkTime(): void {
     let weekTime = 0;
 
-    for (let day in this.workTime[this.lastWeekKey]) {
+    for (const day in this.workTime[this.lastWeekKey]) {
       weekTime += this.workTime[this.lastWeekKey][day];
     }
 

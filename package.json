@@ -1,27 +1,18 @@
 {
   "name": "time-tracker",
   "version": "0.0.0",
-  "main": "electron/dist/main.js",
+  "main": "app.js",
+  "description": "ITOP Tracker",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "electron": "ng build --base-href ./ && tsc --p electron && electron ."
-  },
-  "iohook": {
-    "targets": [
-      "node-83",
-      "electron-82"
-    ],
-    "platforms": [
-      "linux"
-    ],
-    "arches": [
-      "x64"
-    ]
+    "electron": "electron .",
+    "electron-packager": "electron-packager . time-tracker --platform linux --overwrite --arch x64 --out .",
+    "electron-installer-debian": "electron-installer-debian --src ./time-tracker-linux-x64/ --dest ./installers/ --arch amd64"
   },
   "private": true,
   "dependencies": {
@@ -35,9 +26,16 @@
     "@angular/platform-browser": "~10.2.0",
     "@angular/platform-browser-dynamic": "~10.2.0",
     "@angular/router": "~10.2.0",
-    "iohook": "^0.7.2",
+    "@google-cloud/storage": "^5.7.0",
+    "asar": "^3.0.3",
+    "bcryptjs": "^2.4.3",
+    "jimp": "^0.16.1",
+    "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.1",
+    "mongoose": "^5.11.9",
     "ngx-electron": "^2.2.0",
+    "prebuild-install": "^6.0.0",
+    "robotjs": "0.5.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
@@ -51,8 +49,10 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "^12.11.1",
     "codelyzer": "^6.0.0",
-    "electron": "^10.1.5",
-    "electron-rebuild": "^2.3.2",
+    "electron": "10.2.0",
+    "electron-installer-debian": "^3.1.0",
+    "electron-packager": "^15.2.0",
+    "electron-rebuild": "^2.3.4",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.0.0",

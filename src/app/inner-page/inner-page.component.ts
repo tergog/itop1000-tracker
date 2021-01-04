@@ -9,30 +9,30 @@ import { Project } from '../shared/models/project.model';
 })
 export class InnerPageComponent implements OnInit {
   @Output() logout: EventEmitter<boolean> = new EventEmitter<boolean>();
-  public isStarted: boolean = false;
+  public isStarted: boolean;
   public projects: Project[] = [];
   public userId: string;
 
   constructor() { }
 
   ngOnInit(): void {
-   const userInfo: any = jwtDecode(localStorage.getItem('token'));
-   this.projects = userInfo.activeProjects;
-   this.userId = userInfo.id;
+    const userInfo: any = jwtDecode(localStorage.getItem('token'));
+    this.projects = userInfo.activeProjects;
+    this.userId = userInfo.id;
   }
 
-  public startWork(projectArrayId: number) {
-    localStorage.setItem('activeProject', String(projectArrayId))
+  public startWork(projectArrayId: number): void {
+    localStorage.setItem('activeProject', String(projectArrayId));
     this.isStarted = true;
   }
 
-  public endWork() {
+  public endWork(): void {
     const userInfo: any = jwtDecode(localStorage.getItem('token'));
     this.projects = userInfo.activeProjects;
     this.isStarted = false;
   }
 
-  public onLogoutClick() {
+  public onLogoutClick(): void {
     this.logout.emit();
   }
 
