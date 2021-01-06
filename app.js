@@ -4,7 +4,17 @@ const { interval } = require('rxjs');
 const url = require("url");
 const path = require("path");
 
-const middlewares = require("./middlewares/accounts/accounts.controller");
+
+const robot = require('robotjs');
+const Jimp = require('jimp');
+const { Storage } = require('@google-cloud/storage');
+const config = require('./middlewares/config.json');
+const db = require('./middlewares/_helpers/db');
+const Account = db.Account;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const fs = require('fs');
 
 
 let win;
@@ -32,20 +42,21 @@ function createWindow() {
     }
   });
 
-  win.loadURL(url.format({
-      pathname: path.join(__dirname, `dist/index.html`),
-      protocol: "file",
-      slashes: true
-    })
-  );
+  // win.loadURL(url.format({
+  //     pathname: path.join(__dirname, `dist/index.html`),
+  //     protocol: "file",
+  //     slashes: true
+  //   })
+  // );
 
-  // win.loadURL("http://localhost:4200");
+  win.loadURL("http://localhost:4200");
 
   let ses = win.webContents.session;
 
-  middlewares.authenticate();
-  middlewares.updateWorkTime();
-  middlewares.screenshot();
+  authenticate();
+  updateWorkTime();
+  screenshot();
+
   //
   // let mouseInterval;
   // ipcMain.on('mouse-event-channel', (event, message) => {
@@ -66,10 +77,6 @@ function createWindow() {
   // });
 
   win.on('close', (e) => {
-    updateWorkTimeData().then(data => {
-      middlewares.updateWorkTime(data).then( () => console.log('workTime updated'));
-      });
-
     const choice = require('electron').dialog.showMessageBoxSync(win,
       {
         'type': 'question',
@@ -82,7 +89,6 @@ function createWindow() {
     } else {
       ses.clearStorageData().then(() => console.log('localStorage clean'));
     }
-
   });
 
   win.on('closed', () => {
@@ -112,4 +118,112 @@ async function updateWorkTimeData() {
   return {token, projectId, workTime};
 }
 
+function authenticate() {
+  ipcMain.on('authenticate', async (event, message) => {
+    const account = await Account.findOne({ email: message.email, isVerified: true });
+    if (account && bcrypt.compareSync(message.password, account.passwordHash)) {
+      // return basic details and auth token
+      const token = jwt.sign({ ...basicDetails(account) }, config.secret);
+      event.sender.send('authenticate', { token });
+    }
+  });
+}
 
+function updateWorkTime() {
+  ipcMain.on('updateWorkTime', async (event, message) => {
+    const account = await getAccount(message.token).then(u => u);
+
+    await defaultProjectUpdating(account, message.projectId, message.workTime);
+
+    const response = jwt.sign({ ...basicDetails(account) }, config.secret);
+
+    event.sender.send('updateWorkTime', { response });
+  });
+}
+
+function screenshot() {
+  ipcMain.on('takeScreenshot', async (event, message) => {
+    const account = await getAccount(message.token).then(u => u);
+    const project = account.activeProjects[message.projectId];
+
+    try {
+      const link = await takeScreenshots();
+      const screenshotLink = [project.employerId, project.title, account._id, link].join('/');
+      const storageImageLink = await uploadFile(screenshotLink, `./public/screenshots/${link}`);
+      await fs.unlinkSync(`./public/screenshots/${link}`);
+      account.activeProjects[message.projectId].screenshots.push({ link: storageImageLink, dateCreated: Date.now() });
+    } catch(e) {
+      console.log(e, 'Screenshot saving have been crushed');
+    }
+
+    await defaultProjectUpdating(account, message.projectId, message.workTime);
+
+    const response = jwt.sign({ ...basicDetails(account) }, config.secret);
+    event.sender.send('takeScreenshot', { response });
+  });
+}
+
+
+
+async function takeScreenshots() {
+
+  const screenWidth = robot.getScreenSize().width;
+  const screenHeight = robot.getScreenSize().height;
+
+  const img = robot.screen.capture(0, 0, screenWidth, screenHeight);
+  const path = './public/screenshots/' + String(Date.now()) + '.png';
+
+  // Create a new blank image, same size as Robotjs' one
+  let jimp = new Jimp(screenWidth, screenHeight);
+
+  for (let x=0; x < screenWidth; x++) {
+    for (let y=0; y < screenHeight; y++) {
+      let index = (y * img.byteWidth) + (x * img.bytesPerPixel);
+      let r = img.image[index];
+      let g = img.image[index+1];
+      let b = img.image[index+2];
+      let num = (r*256) + (g*256*256) + (b*256*256*256) + 255;
+      jimp.setPixelColor(num, x, y);
+    }
+  }
+
+  await jimp.write(path);
+
+  const pathArr = path.split('/');
+  return pathArr[pathArr.length - 1];
+}
+
+async function uploadFile(key, file) {
+
+  const storage = new Storage({keyFilename: config.storageConfigFile});
+
+  const bucketName = config.storageBucketName;
+
+  const res = await storage.bucket(bucketName).upload(file, {
+    destination: key,
+  });
+  const url = res[0].metadata.mediaLink;
+
+  await storage.bucket(bucketName).file(key).makePublic();
+
+  return url;
+}
+
+
+
+async function getAccount(token) {
+  const userId = jwt.verify(token, config.secret).id;
+  return Account.findOne({ "_id": userId });
+}
+
+async function defaultProjectUpdating(account, projectId, workTime) {
+  account.activeProjects[projectId].workTime = workTime;
+  account.activeProjects[projectId].dateUpdated = Date.now();
+
+  await account.save();
+}
+
+function basicDetails(user) {
+  const { id, activeProjects } = user;
+  return { id, activeProjects };
+}
