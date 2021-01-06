@@ -12,8 +12,4 @@ export class ScreenshotService {
   public takeScreenshot(projectId: number, workTime: object): Observable<any> {
     return this.http.post<any>(`${environment.apiURL}/accounts/screenshot`, {projectId, workTime});
   }
-
-  public reserveScreenshot(): Observable<string> {
-    return this.http.get<string>(`${environment.apiURL}/accounts/reserve-screenshot`);
-  }
 }

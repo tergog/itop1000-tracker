@@ -1,6 +1,6 @@
 {
   "secret": "time-tracker82632d38-a906-441a-aa1b-cc8333a91aa1a9cc6f57-e82d-492c-a714-d7b26267c62d025ad342-66e9-4084-9a32-b1cce7d1602d",
-  "storageConfigFile": "./time-tracker-storage-f9c6b5a5f36e.json",
+  "storageConfigFile": "time-tracker-storage-f9c6b5a5f36e.json",
   "storageBucketName": "time-tracker-screenshots-bucket",
   "mongoURI": "mongodb://localhost/node-mongo-signup-verification-api"
 }

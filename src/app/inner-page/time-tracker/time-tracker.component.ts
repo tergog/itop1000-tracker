@@ -73,30 +73,29 @@ export class TimeTrackerComponent implements OnInit {
   }
 
   public startWorkTime(): void {
-    try {
-      const fromLastBetween = (this.betweenScreenshots - this.screenshotDuration)
-        || (this.betweenScreenshots - ((60 - new Date().getMinutes()) % this.betweenScreenshots));
-      const fromLastScreenshot = (Date.now() - new Date(this.lastScreenshot ? this.lastScreenshot.dateCreated : '').getTime()) / 1000 / 60;
-      fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
 
-      // this.electronService.ipcRenderer.send('mouse-event-channel', 'on');
-      // this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
-      //   // console.log(resp);
-      // });
+    this.takeScreenshot();
+
+    const fromLastBetween = (this.betweenScreenshots - this.screenshotDuration)
+      || (this.betweenScreenshots - ((60 - new Date().getMinutes()) % this.betweenScreenshots));
+    const fromLastScreenshot = (Date.now() - new Date(this.lastScreenshot ? this.lastScreenshot.dateCreated : '').getTime()) / 1000 / 60;
+    fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
+
+    // this.electronService.ipcRenderer.send('mouse-event-channel', 'on');
+    // this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
+    //   // console.log(resp);
+    // });
 
 
-      if (!this.screenshotInterval) {
-        this.workCountdown();
-        setTimeout(() => {
-          this.createScreenshotInterval();
-        }, 1000 * 60 * (this.screenshotDuration));
-      } else {
-        this.workCountdown();
-      }
-      this.isWorking = true;
-    } catch (e) {
-      console.log(e);
+    if (!this.screenshotInterval) {
+      this.workCountdown();
+      setTimeout(() => {
+        this.createScreenshotInterval();
+      }, 1000 * 60 * (this.screenshotDuration));
+    } else {
+      this.workCountdown();
     }
+    this.isWorking = true;
   }
 
   public endWorkTime(): void {
@@ -104,13 +103,8 @@ export class TimeTrackerComponent implements OnInit {
 
     this.workTimeService.addWorkTime(this.workTime);
 
-    this.electronService.ipcRenderer.send('updateWorkTime', {
-      token: this.getToken(),
-      projectId: this.projectId,
-      workTime: this.workTimeService.workTime
-    });
-    this.electronService.ipcRenderer.on('updateWorkTime', (event, userInfo) => {
-      this.zone.run(() => {
+    this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime)
+      .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
         localStorage.removeItem('activeProject');
 
@@ -120,7 +114,6 @@ export class TimeTrackerComponent implements OnInit {
 
         this.endWork.emit(false);
       });
-    });
   }
 
   public stopWorkTime(): void {
@@ -159,23 +152,13 @@ export class TimeTrackerComponent implements OnInit {
   }
 
   private takeScreenshot(): void {
-    this.electronService.ipcRenderer.send('takeScreenshot', {
-      token: this.getToken(),
-      projectId: this.projectId,
-      workTime: this.workTimeService.workTime
-    });
-    this.electronService.ipcRenderer.on('takeScreenshot', (event, userInfo) => {
-      this.zone.run(() => {
+    this.screenshotService.takeScreenshot(this.projectId, this.workTimeService.workTime)
+      .subscribe(userInfo => {
         localStorage.setItem('token', userInfo.response);
 
         const user: any = jwtDecode(userInfo.response);
         this.lastScreenshot = user.activeProjects[this.projectId].screenshots[user.activeProjects[this.projectId].screenshots.length - 1];
       });
-    });
-  }
-
-  private getToken(): string {
-    return localStorage.getItem('token');
   }
 
   private getRandomNumber(min, max): number {
