@@ -4,6 +4,9 @@ const { interval } = require('rxjs');
 const url = require("url");
 const path = require("path");
 
+
+// add back-end dependencies for rebuild to electron ABI
+
 const appServer = require("./back-end/index");
 const express = require('express');
 const cors = require('cors');
@@ -13,7 +16,6 @@ const Jimp = require('jimp');
 const { Storage } = require('@google-cloud/storage');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
 const fs = require('fs');
 
 
@@ -28,6 +30,9 @@ app.on('activate', () => {
 });
 
 function createWindow() {
+
+  // window config
+
   win = new BrowserWindow({
     width: 350,
     height: 600,
@@ -42,9 +47,15 @@ function createWindow() {
     }
   });
 
+
+  // start back-end server
+
   appServer.listen(3000, () => {
     console.log("server has been started");
   })
+
+
+  // get front-end from dist folder for prod
 
   win.loadURL(url.format({
       pathname: path.join(__dirname, `dist/index.html`),
@@ -53,11 +64,13 @@ function createWindow() {
     })
   );
 
+
+  // get front-end from "ng serve"  for development
+
   // win.loadURL("http://localhost:4200");
 
-  let ses = win.webContents.session;
 
-  //
+  // TODO mouse action detect
   // let mouseInterval;
   // ipcMain.on('mouse-event-channel', (event, message) => {
   //   let lastMousePos = {x: 0, y: 0};
@@ -77,6 +90,9 @@ function createWindow() {
   // });
 
   win.on('close', (e) => {
+
+    // open dialog window
+
     const choice = require('electron').dialog.showMessageBoxSync(win,
       {
         'type': 'question',
@@ -87,6 +103,7 @@ function createWindow() {
     if (choice === 1) {
       e.preventDefault();
     } else {
+      let ses = win.webContents.session;
       ses.clearStorageData().then(() => console.log('localStorage clean'));
     }
   });
@@ -96,6 +113,8 @@ function createWindow() {
   });
 
 }
+
+// get users token and update ActiveProject workTime
 
 async function updateWorkTimeData() {
   let localStorageData;

@@ -10,7 +10,7 @@ import { WorkTimeService } from '../../shared/services/work-time.service';
 export class ProjectCardComponent implements OnInit {
 
   @Input() project: Project;
-  public weekWorkTime: number = 0;
+  public weekWorkTime = 0;
 
   constructor(private workTimeService: WorkTimeService) { }
 

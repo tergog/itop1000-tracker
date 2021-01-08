@@ -1,4 +1,6 @@
-import { ChangeDetectorRef, Component, NgZone, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+
+import { LocalStorage } from './shared/constants/local-storage';
 
 @Component({
   selector: 'app-root',
@@ -13,7 +15,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isAuth = !!localStorage.getItem('token');
+    this.isAuth = !!localStorage.getItem(LocalStorage.TOKEN);
   }
 
   onLogin(): void {
@@ -21,7 +23,7 @@ export class AppComponent implements OnInit {
   }
 
   onLogoutClick(): void {
-    localStorage.removeItem('token');
+    localStorage.removeItem(LocalStorage.TOKEN);
     this.isAuth = false;
   }
 

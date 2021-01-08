@@ -67,7 +67,7 @@ export class WorkTimeService {
     return new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
   }
 
-  private updateWeekDay():void {
+  private updateWeekDay(): void {
     if (Number(this.lastWeekKey) !== this.startWeek) {
       this.workTime[this.startWeek] = {[this.startDay]: 0};
       this.lastWeekKey = this.startWeek;

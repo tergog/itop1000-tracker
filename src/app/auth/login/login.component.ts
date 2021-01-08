@@ -1,6 +1,8 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+
 import { UsersService } from '../../shared/services/users.service';
+import { LocalStorage } from '../../shared/constants/local-storage';
 
 @Component({
   selector: 'app-login',
@@ -27,7 +29,7 @@ export class LoginComponent implements OnInit {
   public onSubmit(): void {
     this.usersService.login(this.authForm.value).subscribe(
       (userInfo) => {
-        localStorage.setItem('token', userInfo.token);
+        localStorage.setItem(LocalStorage.TOKEN, userInfo.token);
         this.isAuth.emit(true);
       },
       err => this.errorMessage = err.error.message
