@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 
 import { UsersService } from '../../shared/services/users.service';
 import { LocalStorage } from '../../shared/constants/local-storage';
+import { User } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +18,7 @@ export class LoginComponent implements OnInit {
 
   public errorMessage: string;
 
-  @Output() isAuth: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() isAuth: EventEmitter<User> = new EventEmitter<User>();
 
   constructor(private fb: FormBuilder,
               private usersService: UsersService,
@@ -28,9 +29,9 @@ export class LoginComponent implements OnInit {
 
   public onSubmit(): void {
     this.usersService.login(this.authForm.value).subscribe(
-      (userInfo) => {
-        localStorage.setItem(LocalStorage.TOKEN, userInfo.token);
-        this.isAuth.emit(true);
+      (data) => {
+        localStorage.setItem(LocalStorage.TOKEN, data.token);
+        this.isAuth.emit(data.user);
       },
       err => this.errorMessage = err.error.message
     );

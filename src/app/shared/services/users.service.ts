@@ -15,6 +15,10 @@ export class UsersService {
     return this.http.post<any>(`${environment.apiURL}/accounts/auth`, data).pipe(take(1));
   }
 
+  public getUserProjects(): Observable<any> {
+    return this.http.get<any>(`${environment.apiURL}/accounts/projects`).pipe(take(1));
+  }
+
   public updateWorkTime(projectId: number, workTime: object): Observable<any> {
     return this.http.post<any>(`${environment.apiURL}/accounts/update`, {projectId, workTime}).pipe(take(1));
   }

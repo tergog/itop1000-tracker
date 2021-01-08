@@ -11,6 +11,7 @@ const Account = db.Account;
 
 module.exports = {
   authenticate,
+  getUserProjects,
   updateWorkTime,
   takeScreenshot,
 }
@@ -19,16 +20,20 @@ async function authenticate({ email, password }) {
   const account = await Account.findOne({ email, isVerified: true });
   if (account && bcrypt.compareSync(password, account.passwordHash)) {
     // return basic details and auth token
-    const token = jwt.sign(basicDetails(account), config.secret);
+    const token = jwt.sign(account.passwordHash, config.secret);
     return { token };
   }
+}
+
+async function getUserProjects(token) {
+  const account = await getAccount(token);
+  return basicDetails(account);
 }
 
 async function updateWorkTime(token, { projectId, workTime }) {
   const account = await getAccount(token);
   await defaultProjectUpdating(account, projectId, workTime);
-  const response = jwt.sign(basicDetails(account), config.secret);
-  return { response }
+  return basicDetails(account)
 }
 
 async function takeScreenshot(token, { projectId, workTime }) {
@@ -40,21 +45,20 @@ async function takeScreenshot(token, { projectId, workTime }) {
 
   // create screenshot path for storage and upload screenshot
   const screenshotLink = [project.employerId, project.title, account._id, link].join('/');
-  const storageImageLink = await storageService.uploadFile(screenshotLink, path.join(__dirname, `/public/screenshots/${link}`))
+  const storageImageLink = await storageService.uploadFile(screenshotLink,`./public/screenshots/${link}`)
 
   // delete image from app
-  await fs.unlinkSync(path.join(__dirname, `/public/screenshots/${link}`))
+  await fs.unlinkSync(`./public/screenshots/${link}`);
 
   // return updated account with screenshot link
   account.activeProjects[projectId].screenshots.push({ link: storageImageLink, dateCreated: Date.now() });
   await defaultProjectUpdating(account, projectId, workTime);
-  const response = jwt.sign(basicDetails(account), config.secret);
-  return { response };
+  return basicDetails(account);
 }
 
 async function getAccount(token) {
-  const userId = jwt.verify(token, config.secret).id;
-  return Account.findOne({ "_id": userId });
+  const userPasswordHash = jwt.verify(token, config.secret);
+  return Account.findOne({ "passwordHash": userPasswordHash });
 }
 
 async function defaultProjectUpdating(account, projectId, workTime) {
@@ -63,8 +67,8 @@ async function defaultProjectUpdating(account, projectId, workTime) {
   await account.save();
 }
 
-function basicDetails(user) {
-  const { id, activeProjects } = user;
+function basicDetails(account) {
+  const { id, activeProjects } = account;
   return { id, activeProjects };
 }
 

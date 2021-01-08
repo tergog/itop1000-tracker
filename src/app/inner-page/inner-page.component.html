@@ -1,5 +1,5 @@
 <div class="tracker-page" *ngIf="isStarted">
-  <app-time-tracker (endWork)="endWork()"></app-time-tracker>
+  <app-time-tracker (exitProject)="endWork()" [project]="project"></app-time-tracker>
 </div>
 
 <div class="projects-page" *ngIf="!isStarted">

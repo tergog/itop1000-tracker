@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { BehaviorSubject, interval, Subscription } from 'rxjs';
 import { ElectronService } from 'ngx-electron';
 import jwtDecode from 'jwt-decode';
@@ -19,11 +19,11 @@ import { LocalStorage } from '../../shared/constants/local-storage';
 })
 export class TimeTrackerComponent implements OnInit, OnDestroy {
 
-
+  @Input() project: Project;
   @Output() exitProject: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   private projectId: number;
-  public project: Project;
+  // public project: Project;
   public lastScreenshot: ScreenshotModel;
   public workTime = 0;
   public isWorking: boolean;
@@ -52,11 +52,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    const user: User = jwtDecode(localStorage.getItem(LocalStorage.TOKEN));
     this.projectId = +localStorage.getItem(LocalStorage.ACTIVE_PROJECT_ID);
-    this.project = user.activeProjects[this.projectId];
     this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
-
     this.workTimeService.setWorkTime(this.project.workTime);
 
     this.betweenScreenshots = (60 / this.project.screenshotsPerHour);
@@ -70,9 +67,9 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.secondCount$.unsubscribe();
-    this.workInterval.unsubscribe();
-    this.timer.unsubscribe();
+    this.secondCount$ && this.secondCount$.unsubscribe();
+    this.workInterval && this.workInterval.unsubscribe();
+    this.timer && this.timer.unsubscribe();
   }
 
   public onSlideChange(): void {
@@ -114,8 +111,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
     this.workTimeService.addWorkTime(this.workTime);
     this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime)
-      .subscribe(userInfo => {
-        localStorage.setItem(LocalStorage.TOKEN, userInfo.response);
+      .subscribe(() => {
         localStorage.removeItem(LocalStorage.ACTIVE_PROJECT_ID);
 
         if (this.workInterval) {
@@ -165,9 +161,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
   private takeScreenshot(): void {
     this.screenshotService.takeScreenshot(this.projectId, this.workTimeService.workTime)
-      .subscribe(userInfo => {
-        localStorage.setItem(LocalStorage.TOKEN, userInfo.response);
-        const user: User = jwtDecode(userInfo.response);
+      .subscribe((user: User) => {
         this.lastScreenshot = user.activeProjects[this.projectId].screenshots[user.activeProjects[this.projectId].screenshots.length - 1];
       });
   }
