@@ -45,10 +45,10 @@ async function takeScreenshot(token, { projectId, workTime }) {
 
   // create screenshot path for storage and upload screenshot
   const screenshotLink = [project.employerId, project.title, account._id, link].join('/');
-  const storageImageLink = await storageService.uploadFile(screenshotLink,`./public/screenshots/${link}`)
+  const storageImageLink = await storageService.uploadFile(screenshotLink, path.join(__dirname, `./public/screenshots/${link}`))
 
   // delete image from app
-  await fs.unlinkSync(`./public/screenshots/${link}`);
+  await fs.unlinkSync(path.join(__dirname, `./public/screenshots/${link}`));
 
   // return updated account with screenshot link
   account.activeProjects[projectId].screenshots.push({ link: storageImageLink, dateCreated: Date.now() });

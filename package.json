@@ -11,7 +11,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "electron": "electron .",
-    "electron-packager": "electron-packager . time-tracker --platform linux --asar --overwrite --arch x64 --out .",
+    "electron-packager": "electron-packager . time-tracker --platform linux --overwrite --arch x64 --out .",
     "electron-installer-debian": "electron-installer-debian --src ./time-tracker-linux-x64/ --dest ./installers/ --arch amd64"
   },
   "private": true,

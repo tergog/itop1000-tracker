@@ -1,5 +1,6 @@
 const robot = require('robotjs');
 const Jimp = require('jimp');
+const path = require('path');
 
 module.exports = {
   takeScreenshots
@@ -10,7 +11,7 @@ async function takeScreenshots() {
   const screenHeight = robot.getScreenSize().height;
 
   const img = robot.screen.capture(0, 0, screenWidth, screenHeight);
-  const path = './public/screenshots/' + Date.now() + '.png';
+  const path = path.join(__dirname, './public/screenshots/' + Date.now() + '.png');
 
   // Create a new blank image, same size as Robotjs' one
   let jimp = new Jimp(screenWidth, screenHeight);

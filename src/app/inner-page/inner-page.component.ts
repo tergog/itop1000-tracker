@@ -20,10 +20,6 @@ export class InnerPageComponent implements OnInit {
   constructor(private userService: UsersService) { }
 
   ngOnInit(): void {
-    // const userInfo: any = jwtDecode(localStorage.getItem(LocalStorage.TOKEN));
-    // this.projects = userInfo.activeProjects;
-    // this.userId = userInfo.id;
-
     this.userService.getUserProjects().subscribe((user: User) => {
       this.projects = user.activeProjects;
     });

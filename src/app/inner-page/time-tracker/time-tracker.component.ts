@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { BehaviorSubject, interval, Subscription } from 'rxjs';
 import { ElectronService } from 'ngx-electron';
-import jwtDecode from 'jwt-decode';
 
 import { ScreenshotService } from '../../shared/services/screenshot.service';
 import { UsersService } from '../../shared/services/users.service';
@@ -23,7 +22,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   @Output() exitProject: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   private projectId: number;
-  // public project: Project;
   public lastScreenshot: ScreenshotModel;
   public workTime = 0;
   public isWorking: boolean;
@@ -113,11 +111,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime)
       .subscribe(() => {
         localStorage.removeItem(LocalStorage.ACTIVE_PROJECT_ID);
-
-        if (this.workInterval) {
-          this.workInterval.unsubscribe();
-        }
-
         this.exitProject.emit();
       });
   }

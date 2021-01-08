@@ -20,8 +20,10 @@ export class ProjectCardComponent implements OnInit {
     const startWeek = this.workTimeService.getStartWeek();
 
     if (lastWeekKey === startWeek) {
-      for (let day in this.project.workTime[lastWeekKey]) {
-        this.weekWorkTime += this.project.workTime[lastWeekKey][day];
+      for (const day in this.project.workTime[lastWeekKey]) {
+        if (this.project.workTime[lastWeekKey].hasOwnProperty(day)) {
+          this.weekWorkTime += this.project.workTime[lastWeekKey][day];
+        }
       }
     } else {
       this.weekWorkTime = 0;

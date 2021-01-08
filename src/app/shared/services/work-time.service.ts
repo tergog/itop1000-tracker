@@ -21,7 +21,6 @@ export class WorkTimeService {
 
 
   public setWorkTime(workTimeObject: WorkTimeModel): void {
-
     this.workTime = workTimeObject;
 
     this.startWeek = this.getStartWeek();
@@ -88,7 +87,9 @@ export class WorkTimeService {
     let weekTime = 0;
 
     for (const day in this.workTime[this.lastWeekKey]) {
-      weekTime += this.workTime[this.lastWeekKey][day];
+      if (this.workTime[this.lastWeekKey].hasOwnProperty(day)) {
+        weekTime += this.workTime[this.lastWeekKey][day];
+      }
     }
 
     this.week = weekTime;
@@ -96,7 +97,6 @@ export class WorkTimeService {
 
 
   // helpers
-
 
   public getLastKey(obj: object): any {
     const keys = Object.keys(obj);
