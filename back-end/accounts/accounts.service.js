@@ -20,7 +20,7 @@ async function authenticate({ email, password }) {
   const account = await Account.findOne({ email, isVerified: true });
   if (account && bcrypt.compareSync(password, account.passwordHash)) {
     // return basic details and auth token
-    const token = jwt.sign(account.passwordHash, config.secret);
+    const token = jwt.sign(account.id, config.secret);
     return { token };
   }
 }
@@ -57,8 +57,8 @@ async function takeScreenshot(token, { projectId, workTime }) {
 }
 
 async function getAccount(token) {
-  const userPasswordHash = jwt.verify(token, config.secret);
-  return Account.findOne({ "passwordHash": userPasswordHash });
+  const userId = jwt.verify(token, config.secret);
+  return Account.findOne({ "_id": userId });
 }
 
 async function defaultProjectUpdating(account, projectId, workTime) {
