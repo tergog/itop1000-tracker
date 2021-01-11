@@ -57,17 +57,17 @@ function createWindow() {
 
   // get front-end from dist folder for prod
 
-  win.loadURL(url.format({
-      pathname: path.join(__dirname, `dist/index.html`),
-      protocol: "file",
-      slashes: true
-    })
-  );
+  // win.loadURL(url.format({
+  //     pathname: path.join(__dirname, `dist/index.html`),
+  //     protocol: "file",
+  //     slashes: true
+  //   })
+  // );
 
 
   // get front-end from "ng serve"  for development
 
-  // win.loadURL("http://localhost:4200");
+  win.loadURL("http://localhost:4200");
 
 
   // TODO mouse action detect
@@ -113,6 +113,7 @@ function createWindow() {
   });
 
 }
+
 
 // get users token and update ActiveProject workTime
 

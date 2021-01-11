@@ -11,7 +11,9 @@ async function takeScreenshots() {
   const screenHeight = robot.getScreenSize().height;
 
   const img = robot.screen.capture(0, 0, screenWidth, screenHeight);
-  const path = path.join(__dirname, './public/screenshots/' + Date.now() + '.png');
+
+  // TODO create folder with 
+  const imgPath = './itop-screenshots/' + Date.now() + '.png';
 
   // Create a new blank image, same size as Robotjs' one
   let jimp = new Jimp(screenWidth, screenHeight);
@@ -28,9 +30,9 @@ async function takeScreenshots() {
   }
 
   // save image
-  await jimp.write(path);
+  await jimp.write(imgPath);
 
   // return image's name
-  const pathArr = path.split('/');
+  const pathArr = imgPath.split('/');
   return pathArr[pathArr.length - 1];
 }

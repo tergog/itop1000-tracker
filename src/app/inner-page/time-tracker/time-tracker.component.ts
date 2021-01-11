@@ -28,12 +28,11 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
   private secondCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   private nextScreenshotTime: number;
-  private screenshotDuration = 0;
+  private workDuration = 0;
   private betweenScreenshots: number;
 
   private workInterval: Subscription;
   public timer: Subscription;
-
 
 
   private static getRandomNumber(min, max): number {
@@ -54,10 +53,12 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
     this.workTimeService.setWorkTime(this.project.workTime);
 
-    this.betweenScreenshots = (60 / this.project.screenshotsPerHour);
-    this.screenshotDuration = (60 - new Date().getMinutes()) % this.betweenScreenshots;
+    this.betweenScreenshots = (60 / this.project.screenshotsPerHour) * 60;
+    this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
+    console.log(this.betweenScreenshots, this.workDuration);
 
     this.secondCount$.subscribe((sec: number) => {
+      console.log(sec, this.nextScreenshotTime);
       if (sec === this.nextScreenshotTime) {
         this.takeScreenshot();
       }
@@ -71,18 +72,19 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   public onSlideChange(): void {
-      if (!this.timer || this.timer.closed) {
-        this.startWorkTime();
-      } else {
-        this.stopWorkTime();
-      }
+    if (!this.timer || this.timer.closed) {
+      this.startWorkTime();
+    } else {
+      this.stopWorkTime();
+    }
   }
 
   public startWorkTime(): void {
     // if time from start of work interval more than time from last screenshot, nextScreenshotTime will set on next work interval
-    const fromLastBetween = (this.betweenScreenshots - this.screenshotDuration) ||
-      (this.betweenScreenshots - ((60 - new Date().getMinutes()) % this.betweenScreenshots));
-    const fromLastScreenshot = (Date.now() - new Date(this.lastScreenshot ? this.lastScreenshot.dateCreated : null).getTime()) / 1000 / 60;
+    const fromLastBetween = (this.betweenScreenshots - this.workDuration);
+
+    const fromLastScreenshot = this.lastScreenshot ? (Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 : 0;
+
     fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
 
 
@@ -96,8 +98,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     if (!this.workInterval) {
       this.workCountdown();
       setTimeout(() => {
-        this.createScreenshotInterval();
-      }, 1000 * 60 * (this.screenshotDuration));
+        this.createWorkInterval();
+      }, 1000 * (this.workDuration));
     } else {
       this.workCountdown();
     }
@@ -123,16 +125,16 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     // this.electronService.ipcRenderer.send('mouse-event-channel', 'off');
   }
 
-  private createScreenshotInterval(): void {
+  private createWorkInterval(): void {
     this.updateCountdown();
-    this.workInterval = interval(1000 * 60 * this.betweenScreenshots).subscribe(() => {
+    this.workInterval = interval(1000 * this.betweenScreenshots).subscribe(() => {
       this.updateCountdown();
     });
   }
 
   private workCountdown(): void {
     this.timer = interval(1000).subscribe((sec) => {
-      this.secondCount$.next(sec);
+      this.secondCount$.next(sec + 2);
       this.workTime += 1000;
       this.workTimeService.addWorkTime(1000);
     });
@@ -143,13 +145,14 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.secondCount$.next(0);
 
     this.setNextScreenshotTime();
-    this.screenshotDuration = this.betweenScreenshots;
+    this.workDuration = this.betweenScreenshots;
     this.isWorking && this.workCountdown();
   }
 
   private setNextScreenshotTime(): void {
-    const maxNumber = this.screenshotDuration === this.betweenScreenshots ? this.screenshotDuration-- : this.screenshotDuration;
-    this.nextScreenshotTime = TimeTrackerComponent.getRandomNumber(1, (maxNumber || this.betweenScreenshots - 1)) * 60;
+    // workDuration-10 for 10sec on all actions with queries (600 - 10)
+    const maxNumber = this.workDuration === this.betweenScreenshots ? this.workDuration - 10 : this.workDuration;
+    this.nextScreenshotTime = TimeTrackerComponent.getRandomNumber(1, maxNumber);
   }
 
   private takeScreenshot(): void {

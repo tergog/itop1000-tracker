@@ -16,10 +16,6 @@ export class WorkTimeService {
   private lastWeekKey: number;
   private lastDayKey: number;
 
-  constructor() {
-  }
-
-
   public setWorkTime(workTimeObject: WorkTimeModel): void {
     this.workTime = workTimeObject;
 
@@ -100,10 +96,11 @@ export class WorkTimeService {
 
   public getLastKey(obj: object): any {
     const keys = Object.keys(obj);
-    return keys[keys.length - 1];
+    keys.sort((a, b) => (+a) - (+b) );
+    return `${keys[keys.length - 1]}`;
   }
 
-  private isObjectEmpty(obj: object): any {
+  public isObjectEmpty(obj: object): any {
     return Object.keys(obj).length === 0;
   }
 }

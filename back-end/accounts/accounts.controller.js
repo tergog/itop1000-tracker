@@ -19,7 +19,7 @@ function authenticate(req, res, next) {
 function getUserProjects(req, res, next) {
   const token = req.headers.authorization.split(' ')[1];
   usersService.getUserProjects(token)
-    .then(account => account ? res.json(account) : res.status(400).json({ message: 'Email or password is incorrect' }))
+    .then(account => res.json(account))
     .catch(err => next(err));
 }
 
