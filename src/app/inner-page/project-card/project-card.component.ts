@@ -15,16 +15,16 @@ export class ProjectCardComponent implements OnInit {
   constructor(private workTimeService: WorkTimeService) { }
 
   ngOnInit(): void {
-    const lastWeekKey = Number(this.workTimeService.getLastKey(this.project.workTime));
+    if (this.project.workTime) {
+      const lastWeekKey = Number(this.workTimeService.getLastKey(this.project.workTime));
+      const startWeek = this.workTimeService.getStartWeek();
 
-    const startWeek = this.workTimeService.getStartWeek();
-
-    if (lastWeekKey === startWeek) {
-      for (const day in this.project.workTime[lastWeekKey]) {
-        if (this.project.workTime[lastWeekKey].hasOwnProperty(day)) {
-          this.weekWorkTime += this.project.workTime[lastWeekKey][day];
-        }
+      if (lastWeekKey === startWeek) {
+        this.weekWorkTime = this.workTimeService.getSummaryTimeFromObject(this.project.workTime[lastWeekKey])
+      } else {
+        this.weekWorkTime = 0;
       }
+
     } else {
       this.weekWorkTime = 0;
     }

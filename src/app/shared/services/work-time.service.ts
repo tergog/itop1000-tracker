@@ -10,28 +10,29 @@ export class WorkTimeService {
   public workTime: WorkTimeModel = {};
   public today = 0;
   public week = 0;
+  public interval = 0;
 
   private startWeek;
   private startDay;
+  private startHour;
   private lastWeekKey: number;
   private lastDayKey: number;
+  private lastHourKey: number;
 
-  public setWorkTime(workTimeObject: WorkTimeModel): void {
+  public setWorkTime(workTimeObject?: WorkTimeModel): void {
     this.workTime = workTimeObject;
 
     this.startWeek = this.getStartWeek();
     this.startDay = this.getStartDay();
+    this.startHour = this.getStartHour();
 
-    if (this.isObjectEmpty(this.workTime)) {
-      this.workTime = {
-        [String(this.startWeek)]: {
-          [String(this.startDay)]: 0
-        }
-      };
+    if (!this.workTime || this.isObjectEmpty(this.workTime)) {
+      this.createWorkTimeObject();
     }
 
     this.lastWeekKey = this.getLastKey(this.workTime);
     this.lastDayKey = this.getLastKey(this.workTime[this.lastWeekKey]);
+    this.lastHourKey = this.getLastKey(this.workTime[this.lastWeekKey][this.lastDayKey]);
 
     this.updateWeekDay();
 
@@ -39,16 +40,17 @@ export class WorkTimeService {
     this.setWeekWorkTime();
   }
 
-  public addWorkTime(sec: number): void {
-    if (new Date().getDay() !== new Date(this.lastDayKey).getDay()) {
-      this.startWeek = this.getStartWeek();
-      this.startDay = this.getStartDay();
-      this.updateWeekDay();
-      this.setTodayWorkTime();
-      this.setWeekWorkTime();
-    }
-    this.workTime[this.lastWeekKey][this.lastDayKey] += sec;
-  }
+  // TODO update to new workTimeModel
+  // public addWorkTime(sec: number): void {
+  //   if (new Date().getDay() !== new Date(this.lastDayKey).getDay()) {
+  //     this.startWeek = this.getStartWeek();
+  //     this.startDay = this.getStartDay();
+  //     this.updateWeekDay();
+  //     this.setTodayWorkTime();
+  //     this.setWeekWorkTime();
+  //   }
+  //   this.workTime[this.lastWeekKey][this.lastDayKey] += sec;
+  // }
 
 
   // init functions
@@ -62,33 +64,76 @@ export class WorkTimeService {
     return new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate()).getTime();
   }
 
+  public getStartHour(): number {
+    return new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), new Date().getHours()).getTime();
+  }
+
+  // public getLastIntervalTime(): number {
+  //   const minutes = new Date().getMinutes() - (this.interval - ( 60 - new Date().getMinutes() ) % this.interval);
+  //   return new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), new Date().getHours(),  minutes).getTime();
+  // }
+
   private updateWeekDay(): void {
     if (Number(this.lastWeekKey) !== this.startWeek) {
-      this.workTime[this.startWeek] = {[this.startDay]: 0};
+      this.workTime[this.startWeek] = {
+        [this.startDay]: {
+          [this.startHour]: {}
+        }
+      };
       this.lastWeekKey = this.startWeek;
       this.lastDayKey = this.startDay;
+      this.lastHourKey = this.startHour;
     }
 
     if (Number(this.lastDayKey) !== this.startDay) {
-      this.workTime[this.lastWeekKey][this.startDay] = 0;
+      this.workTime[this.lastWeekKey][this.startDay] = {
+        [this.startHour]: {}
+      };
       this.lastDayKey = this.startDay;
+      this.lastHourKey = this.startHour;
+    }
+
+    if (Number(this.lastHourKey) !== this.startHour) {
+      this.workTime[this.lastWeekKey][this.startDay][this.startHour] = {};
+      this.lastHourKey = this.startHour;
     }
   }
 
   private setTodayWorkTime(): void {
-    this.today = this.workTime[this.lastWeekKey][this.lastDayKey];
+    this.today = this.getSummaryTimeFromObject(this.workTime[this.lastWeekKey][this.lastDayKey]);
   }
 
   private setWeekWorkTime(): void {
-    let weekTime = 0;
+    this.week = this.getSummaryTimeFromObject(this.workTime[this.lastWeekKey]);
+  }
 
-    for (const day in this.workTime[this.lastWeekKey]) {
-      if (this.workTime[this.lastWeekKey].hasOwnProperty(day)) {
-        weekTime += this.workTime[this.lastWeekKey][day];
+  public getSummaryTimeFromObject(obj: any): number {
+    let sum = 0;
+
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key) && 'time' in obj[key] ) {
+        sum += obj.time;
+      } else {
+        sum += this.getSummaryTimeFromObject(obj[key]);
       }
     }
 
-    this.week = weekTime;
+    return sum;
+  }
+
+  private createWorkTimeObject(): void {
+    this.workTime = {
+      [String(this.startWeek)]: {
+        [String(this.startDay)]: {
+          [String(this.getStartHour())]: {
+            // [String(this.getLastIntervalTime())]: {
+            //   time: 0,
+            //   actions: 0
+            // }
+          }
+        }
+      }
+    };
   }
 
 

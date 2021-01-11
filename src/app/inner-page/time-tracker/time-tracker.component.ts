@@ -52,6 +52,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.projectId = +localStorage.getItem(LocalStorage.ACTIVE_PROJECT_ID);
     this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
     this.workTimeService.setWorkTime(this.project.workTime);
+    console.log(this.project, this.workTimeService.workTime);
 
     this.betweenScreenshots = (60 / this.project.screenshotsPerHour) * 60;
     this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
@@ -63,6 +64,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
         this.takeScreenshot();
       }
     });
+
+
   }
 
   ngOnDestroy(): void {
@@ -150,7 +153,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   private setNextScreenshotTime(): void {
-    // workDuration-10 for 10sec on all actions with queries (600 - 10)
+    // workDuration-10 for 10sec on all actions with queries (example: 600 - 10)
     const maxNumber = this.workDuration === this.betweenScreenshots ? this.workDuration - 10 : this.workDuration;
     this.nextScreenshotTime = TimeTrackerComponent.getRandomNumber(1, maxNumber);
   }
