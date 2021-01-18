@@ -32,7 +32,6 @@ export class InnerPageComponent implements OnInit {
   }
 
   public endWork(): void {
-    // this.projects = userInfo.activeProjects;
     this.isStarted = false;
   }
 

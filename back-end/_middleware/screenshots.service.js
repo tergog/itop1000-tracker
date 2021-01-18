@@ -12,7 +12,6 @@ async function takeScreenshots() {
 
   const img = robot.screen.capture(0, 0, screenWidth, screenHeight);
 
-  // TODO create folder with 
   const imgPath = './itop-screenshots/' + Date.now() + '.png';
 
   // Create a new blank image, same size as Robotjs' one

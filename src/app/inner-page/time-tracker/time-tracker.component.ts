@@ -51,12 +51,11 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.projectId = +localStorage.getItem(LocalStorage.ACTIVE_PROJECT_ID);
     this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
-    this.workTimeService.setWorkTime(this.project.workTime);
-    console.log(this.project, this.workTimeService.workTime);
 
     this.betweenScreenshots = (60 / this.project.screenshotsPerHour) * 60;
     this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
-    console.log(this.betweenScreenshots, this.workDuration);
+
+    this.workTimeService.setWorkTime(this.betweenScreenshots, this.project.workTime);
 
     this.secondCount$.subscribe((sec: number) => {
       console.log(sec, this.nextScreenshotTime);
@@ -64,7 +63,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
         this.takeScreenshot();
       }
     });
-
 
   }
 
@@ -83,13 +81,14 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   public startWorkTime(): void {
+    if (this.workDuration !== this.betweenScreenshots) {
+      this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
+    }
+
     // if time from start of work interval more than time from last screenshot, nextScreenshotTime will set on next work interval
     const fromLastBetween = (this.betweenScreenshots - this.workDuration);
-
     const fromLastScreenshot = this.lastScreenshot ? (Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 : 0;
-
     fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
-
 
     // TODO detect mouse actions
     // this.electronService.ipcRenderer.send('mouse-event-channel', 'on');
@@ -102,7 +101,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
       this.workCountdown();
       setTimeout(() => {
         this.createWorkInterval();
-      }, 1000 * (this.workDuration));
+      }, 1000 * this.workDuration);
     } else {
       this.workCountdown();
     }
@@ -112,7 +111,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public endWorkTime(): void {
     this.timer ? this.stopWorkTime() : this.exitProject.emit();
 
-    this.workTimeService.addWorkTime(this.workTime);
     this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime)
       .subscribe(() => {
         localStorage.removeItem(LocalStorage.ACTIVE_PROJECT_ID);
@@ -130,31 +128,37 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
   private createWorkInterval(): void {
     this.updateCountdown();
-    this.workInterval = interval(1000 * this.betweenScreenshots).subscribe(() => {
+    this.workInterval = interval(1000 * this.betweenScreenshots).subscribe((i) => {
+      if (i > 0) {
+        this.workTimeService.addWorkTime(1000);
+      }
       this.updateCountdown();
-    });
-  }
-
-  private workCountdown(): void {
-    this.timer = interval(1000).subscribe((sec) => {
-      this.secondCount$.next(sec + 2);
-      this.workTime += 1000;
-      this.workTimeService.addWorkTime(1000);
+      this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime).subscribe(() => {});
     });
   }
 
   private updateCountdown(): void {
     this.timer.unsubscribe();
-    this.secondCount$.next(0);
+    this.secondCount$.next(this.workDuration);
+    console.log(this.workTimeService.workTime);
 
     this.setNextScreenshotTime();
     this.workDuration = this.betweenScreenshots;
     this.isWorking && this.workCountdown();
   }
 
+  private workCountdown(): void {
+    this.timer = interval(1000).subscribe((sec) => {
+      this.secondCount$.next(sec + 1);
+      this.workTime += 1000;
+      this.workTimeService.addWorkTime(1000);
+    });
+  }
+
   private setNextScreenshotTime(): void {
-    // workDuration-10 for 10sec on all actions with queries (example: 600 - 10)
-    const maxNumber = this.workDuration === this.betweenScreenshots ? this.workDuration - 10 : this.workDuration;
+    // TODO set correct value on last minutes
+    // workDuration-30 for 30sec on all actions with queries (example: 600 - 30)
+    const maxNumber = this.workDuration === this.betweenScreenshots ? this.workDuration - 30 : this.workDuration;
     this.nextScreenshotTime = TimeTrackerComponent.getRandomNumber(1, maxNumber);
   }
 

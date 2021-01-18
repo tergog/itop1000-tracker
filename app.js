@@ -47,9 +47,7 @@ function createWindow() {
     }
   });
 
-
   // start back-end server
-
   appServer.listen(3000, () => {
     console.log("server has been started");
   })

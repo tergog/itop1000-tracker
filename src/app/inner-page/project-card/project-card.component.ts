@@ -16,11 +16,11 @@ export class ProjectCardComponent implements OnInit {
 
   ngOnInit(): void {
     if (this.project.workTime) {
-      const lastWeekKey = Number(this.workTimeService.getLastKey(this.project.workTime));
-      const startWeek = this.workTimeService.getStartWeek();
+      const lastWeekKey = this.workTimeService.getLastKey(this.project.workTime);
+      const startWeek = this.workTimeService.getStartWeek(new Date());
 
       if (lastWeekKey === startWeek) {
-        this.weekWorkTime = this.workTimeService.getSummaryTimeFromObject(this.project.workTime[lastWeekKey])
+        this.weekWorkTime = this.workTimeService.getSummaryTimeFromObject(this.project.workTime[lastWeekKey]);
       } else {
         this.weekWorkTime = 0;
       }
