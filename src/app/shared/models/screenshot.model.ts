@@ -1,4 +1,4 @@
 export interface ScreenshotModel {
-  link: string;
-  dateCreated: number;
+  link?: string;
+  dateCreated?: number;
 }

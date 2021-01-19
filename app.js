@@ -5,7 +5,6 @@ const path = require("path");
 
 
 // add back-end dependencies for rebuild to electron ABI
-
 const appServer = require("./back-end/index");
 const express = require('express');
 const cors = require('cors');
@@ -19,6 +18,7 @@ const fs = require('fs');
 
 
 let win;
+let screenshotDialog;
 
 app.on('ready', createWindow);
 
@@ -74,9 +74,13 @@ function createWindow() {
 
   // TODO screenshot dialog window
   ipcMain.on('screenshot-channel', (event, message) => {
-    const screenshotDialog = new BrowserWindow({
+    const screenWidth = robot.getScreenSize().width;
+
+    screenshotDialog = new BrowserWindow({
       width: 250,
       height: 180,
+      x: screenWidth - 250,
+      y: 0,
       show: false,
       webPreferences: {
         contextIsolation: false,
@@ -88,20 +92,27 @@ function createWindow() {
     })
 
     screenshotDialog.loadURL(url.format({
-          pathname: path.join(__dirname, `electron/screenshot.html`),
-          protocol: "file",
-          slashes: true
-        }))
-
+      pathname: path.join(__dirname, `electron/screenshot.html`),
+      protocol: "file",
+      slashes: true
+    }))
 
     setTimeout(() => {
       screenshotDialog.webContents.send('screenshot-dialog-channel', message);
-      setTimeout(() => screenshotDialog.show(), 200);
+      setTimeout(() => {
+        screenshotDialog.show();
+      }, 200);
     }, 100);
 
-    ipcMain.on('screenshot-dialog-channel', (event, message) => {
-      // TODO deleting screenshot by answer from dialog
-    })
+    ipcMain.once('screenshot-dialog-channel', (sDEvent, sDMessage) => {
+      sDMessage ? event.sender.send('screenshot-channel', message) : event.sender.send('screenshot-channel', false);
+      screenshotDialog.close();
+    });
+
+
+    screenshotDialog.on('closed', () => {
+      screenshotDialog = null;
+    });
   });
 
   win.on('close', (e) => {
@@ -126,7 +137,6 @@ function createWindow() {
   win.on('closed', () => {
     win = null;
   });
-
 }
 
 

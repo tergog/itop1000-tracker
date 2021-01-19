@@ -51,10 +51,9 @@ async function takeScreenshot(token, { projectId, workTime }) {
   await fs.unlinkSync(`./itop-screenshots/${link}`);
   await fs.rmdirSync(`./itop-screenshots`);
 
-  // return updated account with screenshot link
-  account.activeProjects[projectId].screenshots.push({ link: storageImageLink, dateCreated: Date.now() });
+  // return updated screenshot
   await defaultProjectUpdating(account, projectId, workTime);
-  return basicDetails(account);
+  return { link: storageImageLink, dateCreated: Date.now() };
 }
 
 async function getAccount(token) {

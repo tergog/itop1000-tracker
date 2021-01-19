@@ -8,12 +8,24 @@
   <img src="" alt="screenshot.img" id="screenshot" style="width: 100%">
 
   <button id="save">Save</button>
+  <span id="countdown"></span>
   <button id="delete">Delete</button>
 <script>
   const { ipcRenderer } = require('electron');
+
   ipcRenderer.on('screenshot-dialog-channel', (event, message) => {
     let screenshot = document.querySelector('#screenshot');
     screenshot.setAttribute('src', message.link);
+
+    let count = 10;
+    let countdown = document.querySelector('#countdown');
+    countdown.innerHTML = ` ${count} `
+    setInterval(() => {
+      if (count === 0) {
+        ipcRenderer.send('screenshot-dialog-channel', true);
+      }
+      countdown.innerHTML = ` ${--count} `
+    }, 1000)
 
     let saveButton = document.querySelector('#save');
     saveButton.addEventListener('click', () => {

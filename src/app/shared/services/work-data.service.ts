@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 
 import { WorkDataModel } from '../models/work-data.model';
+import { ScreenshotModel } from '../models/screenshot.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,6 +11,7 @@ export class WorkDataService {
   public today = 0;
   public week = 0;
   public interval = 0;
+  public screenshotLink: ScreenshotModel;
 
   private startWeek: number;
   private startDay: number;
@@ -30,6 +32,12 @@ export class WorkDataService {
     this.lastDayKey = this.getLastKey(this.workTime[this.lastWeekKey]);
     this.lastHourKey = this.getLastKey(this.workTime[this.lastWeekKey][this.lastDayKey]);
     this.lastIntervalKey = this.getLastIntervalTime();
+
+    try {
+      this.screenshotLink = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].screenshot;
+    } catch {
+      this.screenshotLink = {};
+    }
 
     this.updateWorkTimByDate();
     if (!this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey].hasOwnProperty(this.lastIntervalKey)) {
@@ -60,6 +68,7 @@ export class WorkDataService {
     console.log(new Date());
     if (!this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey].hasOwnProperty(lastInterval)) {
       const previousIntervalKey = this.getLastKey(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey]);
+
       this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey].actions === 0 ?
         delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey] :
         this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey].time += sec;
@@ -73,7 +82,15 @@ export class WorkDataService {
 
   public addAction(action: number): void {
     this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].actions += action;
-    console.log(this.workTime);
+  }
+
+  public addScreenshot(screenshot: ScreenshotModel): void {
+    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].screenshot = screenshot;
+    console.log('addScreenshot: ', this.workTime);
+  }
+
+  public deleteScreenshot(): void {
+    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].time = 0;
   }
 
   public getLastIntervalTime(): number {

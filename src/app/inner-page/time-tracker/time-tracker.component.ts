@@ -7,7 +7,6 @@ import { UsersService } from '../../shared/services/users.service';
 import { WorkDataService } from '../../shared/services/work-data.service';
 import { Project } from '../../shared/models/project.model';
 import { ScreenshotModel } from '../../shared/models/screenshot.model';
-import { User } from '../../shared/models/user.model';
 import { LocalStorage } from '../../shared/constants/local-storage';
 
 
@@ -26,7 +25,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public workTime = 0;
   public isWorking: boolean;
 
-  private mousePosition: {x: number, y: number} = {x: 0, y: 0};
+  private mousePosition: {x: number, y: number};
 
   private secondCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   private nextScreenshotTime: number;
@@ -46,30 +45,41 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     private electronService: ElectronService,
     private screenshotService: ScreenshotService,
     private usersService: UsersService,
-    public workTimeService: WorkDataService
+    public workDataService: WorkDataService
   ) {
   }
 
   ngOnInit(): void {
     this.projectId = +localStorage.getItem(LocalStorage.ACTIVE_PROJECT_ID);
-    this.lastScreenshot = this.project.screenshots[this.project.screenshots.length - 1];
 
     this.betweenScreenshots = (60 / this.project.screenshotsPerHour) * 60;
     this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
 
-    this.workTimeService.setWorkTime(this.betweenScreenshots, this.project.workTime);
+    this.workDataService.setWorkTime(this.betweenScreenshots, this.project.workTime);
+    this.lastScreenshot = this.workDataService.screenshotLink;
 
     this.secondCount$.subscribe((sec: number) => {
-      console.log(sec, this.nextScreenshotTime);
+      console.log('seconds: ', sec, this.nextScreenshotTime);
       if (sec === this.nextScreenshotTime) {
         this.takeScreenshot();
       }
     });
 
     this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
-      console.log(resp, this.mousePosition, resp !== this.mousePosition );
-      JSON.stringify(resp) !== JSON.stringify(this.mousePosition) && this.workTimeService.addAction(1);
+      console.log('mouse-event: ', resp, this.mousePosition, resp.x !== this.mousePosition.x || resp.y !== this.mousePosition.y );
+      (resp.x !== this.mousePosition.x || resp.y !== this.mousePosition.y) && this.workDataService.addAction(1);
       this.mousePosition = resp;
+    });
+
+    this.electronService.ipcRenderer.on('screenshot-channel', (event, resp: ScreenshotModel) => {
+      console.log(resp);
+      if (resp) {
+        this.workDataService.addScreenshot(resp);
+        this.lastScreenshot = resp;
+        console.log(this.lastScreenshot);
+      } else {
+        this.workDataService.deleteScreenshot();
+      }
     });
   }
 
@@ -88,7 +98,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   public startWorkTime(): void {
-    this.takeScreenshot();
 
     if (this.workDuration !== this.betweenScreenshots) {
       this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
@@ -113,7 +122,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public endWorkTime(): void {
     this.timer ? this.stopWorkTime() : this.exitProject.emit();
 
-    this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime)
+    this.usersService.updateWorkTime(this.projectId, this.workDataService.workTime)
       .subscribe(() => {
         localStorage.removeItem(LocalStorage.ACTIVE_PROJECT_ID);
         this.exitProject.emit();
@@ -123,25 +132,23 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public stopWorkTime(): void {
     this.timer.unsubscribe();
     this.isWorking = false;
-
-    this.electronService.ipcRenderer.send('mouse-event-channel', 'off');
   }
 
   private createWorkInterval(): void {
     this.updateCountdown();
     this.workInterval = interval(1000 * this.betweenScreenshots).subscribe((i) => {
       if (i > 0 && this.isWorking) {
-        this.workTimeService.addWorkTime(1000);
+        this.workDataService.addWorkTime(1000);
       }
       this.updateCountdown();
-      this.usersService.updateWorkTime(this.projectId, this.workTimeService.workTime).subscribe(() => {});
+      this.usersService.updateWorkTime(this.projectId, this.workDataService.workTime).subscribe(() => {});
     });
   }
 
   private updateCountdown(): void {
     this.timer.unsubscribe();
     this.secondCount$.next(this.workDuration);
-    console.log(this.workTimeService.workTime);
+    console.log('updateCountdown: ', this.workDataService.workTime);
 
     this.setNextScreenshotTime();
     this.workDuration = this.betweenScreenshots;
@@ -152,10 +159,10 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.timer = interval(1000).subscribe((sec) => {
       this.secondCount$.next(sec + 1);
       this.workTime += 1000;
-      this.workTimeService.addWorkTime(1000);
+      this.workDataService.addWorkTime(1000);
 
       // TODO detect mouse actions
-      if (sec % 60 === 0) {
+      if (sec !== 0 && sec % 60 === 0) {
         this.electronService.ipcRenderer.send('mouse-event-channel', this.mousePosition);
       }
     });
@@ -169,11 +176,9 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   private takeScreenshot(): void {
-    this.screenshotService.takeScreenshot(this.projectId, this.workTimeService.workTime)
-      .subscribe((user: User) => {
-        const screenshot = user.activeProjects[this.projectId].screenshots[user.activeProjects[this.projectId].screenshots.length - 1];
+    this.screenshotService.takeScreenshot(this.projectId, this.workDataService.workTime)
+      .subscribe((screenshot: ScreenshotModel) => {
         this.electronService.ipcRenderer.send('screenshot-channel', screenshot);
-        this.lastScreenshot = screenshot;
       });
   }
 }
