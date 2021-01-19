@@ -4,7 +4,7 @@ import { ElectronService } from 'ngx-electron';
 
 import { ScreenshotService } from '../../shared/services/screenshot.service';
 import { UsersService } from '../../shared/services/users.service';
-import { WorkTimeService } from '../../shared/services/work-time.service';
+import { WorkDataService } from '../../shared/services/work-data.service';
 import { Project } from '../../shared/models/project.model';
 import { ScreenshotModel } from '../../shared/models/screenshot.model';
 import { User } from '../../shared/models/user.model';
@@ -26,6 +26,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public workTime = 0;
   public isWorking: boolean;
 
+  private mousePosition: {x: number, y: number} = {x: 0, y: 0};
+
   private secondCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   private nextScreenshotTime: number;
   private workDuration = 0;
@@ -44,7 +46,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     private electronService: ElectronService,
     private screenshotService: ScreenshotService,
     private usersService: UsersService,
-    public workTimeService: WorkTimeService
+    public workTimeService: WorkDataService
   ) {
   }
 
@@ -64,6 +66,11 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
+      console.log(resp, this.mousePosition, resp !== this.mousePosition );
+      JSON.stringify(resp) !== JSON.stringify(this.mousePosition) && this.workTimeService.addAction(1);
+      this.mousePosition = resp;
+    });
   }
 
   ngOnDestroy(): void {
@@ -81,6 +88,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   public startWorkTime(): void {
+    this.takeScreenshot();
+
     if (this.workDuration !== this.betweenScreenshots) {
       this.workDuration = ( (60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds() ) % this.betweenScreenshots;
     }
@@ -89,13 +98,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     const fromLastBetween = (this.betweenScreenshots - this.workDuration);
     const fromLastScreenshot = this.lastScreenshot ? (Date.now() - new Date(this.lastScreenshot.dateCreated).getTime()) / 1000 : 0;
     fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
-
-    // TODO detect mouse actions
-    // this.electronService.ipcRenderer.send('mouse-event-channel', 'on');
-    // this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
-    //   // console.log(resp);
-    // });
-
 
     if (!this.workInterval) {
       this.workCountdown();
@@ -122,14 +124,13 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.timer.unsubscribe();
     this.isWorking = false;
 
-    // TODO for detect mouse actions
-    // this.electronService.ipcRenderer.send('mouse-event-channel', 'off');
+    this.electronService.ipcRenderer.send('mouse-event-channel', 'off');
   }
 
   private createWorkInterval(): void {
     this.updateCountdown();
     this.workInterval = interval(1000 * this.betweenScreenshots).subscribe((i) => {
-      if (i > 0) {
+      if (i > 0 && this.isWorking) {
         this.workTimeService.addWorkTime(1000);
       }
       this.updateCountdown();
@@ -152,6 +153,11 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
       this.secondCount$.next(sec + 1);
       this.workTime += 1000;
       this.workTimeService.addWorkTime(1000);
+
+      // TODO detect mouse actions
+      if (sec % 60 === 0) {
+        this.electronService.ipcRenderer.send('mouse-event-channel', this.mousePosition);
+      }
     });
   }
 
@@ -165,7 +171,9 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   private takeScreenshot(): void {
     this.screenshotService.takeScreenshot(this.projectId, this.workTimeService.workTime)
       .subscribe((user: User) => {
-        this.lastScreenshot = user.activeProjects[this.projectId].screenshots[user.activeProjects[this.projectId].screenshots.length - 1];
+        const screenshot = user.activeProjects[this.projectId].screenshots[user.activeProjects[this.projectId].screenshots.length - 1];
+        this.electronService.ipcRenderer.send('screenshot-channel', screenshot);
+        this.lastScreenshot = screenshot;
       });
   }
 }

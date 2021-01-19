@@ -7,7 +7,7 @@ import { ElectronService } from 'ngx-electron';
 
 import { ScreenshotService } from './shared/services/screenshot.service';
 import { UsersService } from './shared/services/users.service';
-import { WorkTimeService } from './shared/services/work-time.service';
+import { WorkDataService } from './shared/services/work-data.service';
 
 import { AppComponent } from './app.component';
 import { LoginComponent } from './auth/login/login.component';
@@ -30,7 +30,7 @@ import { TokenInterceptor } from './shared/interceptors/token.interceptor';
     ElectronService,
     ScreenshotService,
     UsersService,
-    WorkTimeService,
+    WorkDataService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: TokenInterceptor,

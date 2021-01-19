@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Project } from '../../shared/models/project.model';
-import { WorkTimeService } from '../../shared/services/work-time.service';
+import { WorkDataService } from '../../shared/services/work-data.service';
 
 @Component({
   selector: 'app-project-card',
@@ -12,7 +12,7 @@ export class ProjectCardComponent implements OnInit {
   @Input() project: Project;
   public weekWorkTime = 0;
 
-  constructor(private workTimeService: WorkTimeService) { }
+  constructor(private workTimeService: WorkDataService) { }
 
   ngOnInit(): void {
     if (this.project.workTime) {

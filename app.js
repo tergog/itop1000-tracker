@@ -1,6 +1,5 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
 const jwtDecode = require('jwt-decode');
-const { interval } = require('rxjs');
 const url = require("url");
 const path = require("path");
 
@@ -34,7 +33,7 @@ function createWindow() {
   // window config
 
   win = new BrowserWindow({
-    width: 350,
+    width: 1000, // 350,
     height: 600,
     // resizable: false,
     useContentSize: true,
@@ -68,24 +67,42 @@ function createWindow() {
   win.loadURL("http://localhost:4200");
 
 
-  // TODO mouse action detect
-  // let mouseInterval;
-  // ipcMain.on('mouse-event-channel', (event, message) => {
-  //   let lastMousePos = {x: 0, y: 0};
-  //
-  //   if (message === 'off') {
-  //     mouseInterval && mouseInterval.unsubscribe();
-  //     return;
-  //   }
-  //
-  //   if (message === 'on') {
-  //     mouseInterval = interval(1000 * 10).subscribe(() => {
-  //       let mousePos = screen.getCursorScreenPoint();
-  //       event.sender.send('mouse-event-channel', lastMousePos.x !== mousePos.x || lastMousePos.y !== mousePos.y);
-  //       lastMousePos = mousePos;
-  //     });
-  //   }
-  // });
+  ipcMain.on('mouse-event-channel', (event, message) => {
+    let mousePos = screen.getCursorScreenPoint();
+    event.sender.send('mouse-event-channel', mousePos);
+  });
+
+  // TODO screenshot dialog window
+  ipcMain.on('screenshot-channel', (event, message) => {
+    const screenshotDialog = new BrowserWindow({
+      width: 250,
+      height: 180,
+      show: false,
+      webPreferences: {
+        contextIsolation: false,
+        nodeIntegration: true
+      },
+      frame: false,
+      autoHideMenuBar: true,
+      resizable: false
+    })
+
+    screenshotDialog.loadURL(url.format({
+          pathname: path.join(__dirname, `electron/screenshot.html`),
+          protocol: "file",
+          slashes: true
+        }))
+
+
+    setTimeout(() => {
+      screenshotDialog.webContents.send('screenshot-dialog-channel', message);
+      setTimeout(() => screenshotDialog.show(), 200);
+    }, 100);
+
+    ipcMain.on('screenshot-dialog-channel', (event, message) => {
+      // TODO deleting screenshot by answer from dialog
+    })
+  });
 
   win.on('close', (e) => {
 
@@ -133,5 +150,5 @@ async function updateWorkTimeData() {
   const workTime = user.activeProjects[projectId].workTime;
   const token = localStorageData.token;
 
-  return {token, projectId, workTime};
+  return { token, projectId, workTime };
 }

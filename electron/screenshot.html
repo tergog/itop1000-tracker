@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+</head>
+<body>
+  <img src="" alt="screenshot.img" id="screenshot" style="width: 100%">
+
+  <button id="save">Save</button>
+  <button id="delete">Delete</button>
+<script>
+  const { ipcRenderer } = require('electron');
+  ipcRenderer.on('screenshot-dialog-channel', (event, message) => {
+    let screenshot = document.querySelector('#screenshot');
+    screenshot.setAttribute('src', message.link);
+
+    let saveButton = document.querySelector('#save');
+    saveButton.addEventListener('click', () => {
+      ipcRenderer.send('screenshot-dialog-channel', true)
+    });
+
+    let deleteButton = document.querySelector('#delete');
+    deleteButton.addEventListener('click', () => {
+      ipcRenderer.send('screenshot-dialog-channel', false)
+    });
+  })
+
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { inject, TestBed } from '@angular/core/testing';
 
-import { WorkTimeService } from './work-time.service';
+import { WorkDataService } from './work-data.service';
 
 
 fdescribe('WorkTimeService', () => {
@@ -8,29 +8,29 @@ fdescribe('WorkTimeService', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      providers: [WorkTimeService]
+      providers: [WorkDataService]
     });
   });
 
-  it('should create', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should create', inject([WorkDataService], (service: WorkDataService) => {
     expect(service).toBeTruthy();
   }));
 
   /**
    * isObjectEmpty
    */
-  it('should return object is empty', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return object is empty', inject([WorkDataService], (service: WorkDataService) => {
     expect(service.isObjectEmpty({})).toBe(true);
   }));
 
-  it('should return object is not empty', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return object is not empty', inject([WorkDataService], (service: WorkDataService) => {
     expect(service.isObjectEmpty({time: 123000})).toBe(false);
   }));
 
   /**
    * getLastKey
    */
-  it('should return last timestamp', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return last timestamp', inject([WorkDataService], (service: WorkDataService) => {
     expect(service.getLastKey({
       1610612100000: {time: 228000, actions: 0},
       1610612400000: {time: 300000, actions: 0},
@@ -40,7 +40,7 @@ fdescribe('WorkTimeService', () => {
     })).toBe(1610613300000);
   }));
 
-  it('should return without result', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return without result', inject([WorkDataService], (service: WorkDataService) => {
     expect(service.getLastKey({})).toBe(undefined);
   }));
 
@@ -48,18 +48,18 @@ fdescribe('WorkTimeService', () => {
    * getStartWeek, getStartDay, getStartHour
    * should return timestamp
    */
-  it('should return this Monday 00:00:00', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return this Monday 00:00:00', inject([WorkDataService], (service: WorkDataService) => {
     const startWeekDate = (date.getDate() - date.getDay()) + 1;
     const result = new Date(date.getFullYear(), date.getMonth(), startWeekDate).getTime();
     expect(service.getStartWeek(date)).toBe(result);
   }));
 
-  it('should return today 00:00:00', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return today 00:00:00', inject([WorkDataService], (service: WorkDataService) => {
     const result = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
     expect(service.getStartDay(date)).toBe(result);
   }));
 
-  it('should return start of present hour', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return start of present hour', inject([WorkDataService], (service: WorkDataService) => {
     const result = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()).getTime();
     expect(service.getStartHour(date)).toBe(result);
   }));
@@ -67,7 +67,7 @@ fdescribe('WorkTimeService', () => {
   /**
    * getSummaryTimeFromObject
    */
-  it('should return sum of all time value', inject([WorkTimeService], (service: WorkTimeService) => {
+  it('should return sum of all time value', inject([WorkDataService], (service: WorkDataService) => {
     expect(service.getSummaryTimeFromObject({
       1610316000000: {
         1610488800000: {

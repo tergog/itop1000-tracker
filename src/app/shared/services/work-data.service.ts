@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 
-import { WorkTimeModel } from '../models/work-time.model';
+import { WorkDataModel } from '../models/work-data.model';
 
 @Injectable({
   providedIn: 'root'
 })
-export class WorkTimeService {
-  public workTime: WorkTimeModel = {};
+export class WorkDataService {
+  public workTime: WorkDataModel = {};
   public today = 0;
   public week = 0;
   public interval = 0;
@@ -20,7 +20,7 @@ export class WorkTimeService {
   public lastHourKey: number;
   public lastIntervalKey: number;
 
-  public setWorkTime(interval: number, workTimeObject?: WorkTimeModel): void {
+  public setWorkTime(interval: number, workTimeObject?: WorkDataModel): void {
     this.setStartTimeValues();
     this.setInterval(interval);
 
@@ -60,12 +60,20 @@ export class WorkTimeService {
     console.log(new Date());
     if (!this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey].hasOwnProperty(lastInterval)) {
       const previousIntervalKey = this.getLastKey(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey]);
-      this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey].time += sec;
+      this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey].actions === 0 ?
+        delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey] :
+        this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][previousIntervalKey].time += sec;
+
       this.createIntervalObject();
       return;
     }
 
     this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].time += sec;
+  }
+
+  public addAction(action: number): void {
+    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].actions += action;
+    console.log(this.workTime);
   }
 
   public getLastIntervalTime(): number {
@@ -86,7 +94,6 @@ export class WorkTimeService {
     this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][createTime] = {time: 0, actions: 0};
     this.lastIntervalKey = createTime;
   }
-
 
   public setInterval(sec: number): void {
     this.interval = sec;
@@ -182,6 +189,7 @@ export class WorkTimeService {
     }
     return sum;
   }
+
 
   // helpers
 

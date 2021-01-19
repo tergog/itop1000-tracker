@@ -1,12 +1,12 @@
 import { ScreenshotModel } from './screenshot.model';
-import { WorkTimeModel } from './work-time.model';
+import { WorkDataModel } from './work-data.model';
 
 export interface Project {
   _id: string;
   title: string;
   employerId: string;
   screenshotsPerHour: number;
-  workTime: WorkTimeModel;
+  workTime: WorkDataModel;
   dayWorkTime: number;
   hoursPerWeek: number;
   screenshots: Array<ScreenshotModel>;
