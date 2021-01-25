@@ -92,6 +92,145 @@ fdescribe('WorkTimeService', () => {
   }));
 
   /**
+   * setLastScreenshot
+   */
+  it('should set last screenshot to screenshot property', inject([WorkDataService], (service: WorkDataService) => {
+    service.setWorkTime(300, {
+      1610920800000 : {
+        1611093600000 : {
+          1611129600000 : {
+            1611131700000 : {
+              time : 8000,
+              actions : 0
+            },
+            1611132300000 : {
+              time : 86000,
+              actions : 0
+            }
+          },
+          1611133200000 : {
+            1611133200000 : {
+              time : 25000,
+              actions : 2,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611133448149.png?generation=1611133449352542&alt=media',
+                dateCreated : 1611133449836.0
+              }
+            },
+            1611133500000 : {
+              time : 299000,
+              actions : 6,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611133515270.png?generation=1611133516378328&alt=media',
+                dateCreated : 1611133516909.0
+              }
+            },
+            1611133800000 : {
+              time : 299000,
+              actions : 6,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611133978264.png?generation=1611133979424714&alt=media',
+                dateCreated : 1611133979966.0
+              }
+            },
+            1611134100000 : {
+              time : 232000,
+              actions : 2
+            },
+            1611134400000 : {
+              time : 74000,
+              actions : 3
+            },
+            1611134700000 : {
+              time : 140000,
+              actions : 2,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611134861600.png?generation=1611134862877629&alt=media',
+                dateCreated : 1611134863389.0
+              }
+            },
+            1611135000000 : {
+              time : 300000,
+              actions : 3,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611135086596.png?generation=1611135087682427&alt=media',
+                dateCreated : 1611135088154.0
+              }
+            },
+            1611135300000 : {
+              time : 12000,
+              actions : 0
+            },
+            1611135600000 : {
+              time : 275000,
+              actions : 3,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611135679114.png?generation=1611135680399734&alt=media',
+                dateCreated : 1611135680957.0
+              }
+            },
+            1611135900000 : {
+              time : 300000,
+              actions : 3,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611135969104.png?generation=1611135970654021&alt=media',
+                dateCreated : 1611135971274.0
+              }
+            },
+            1611136200000 : {
+              time : 300000,
+              actions : 4,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611136201108.png?generation=1611136202166514&alt=media',
+                dateCreated : 1611136202703.0
+              }
+            },
+            1611136500000 : {
+              time : 300000,
+              actions : 3,
+              screenshot : {
+                link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611136690111.png?generation=1611136691451406&alt=media',
+                dateCreated : 1611136691979.0
+              }
+            }
+          },
+          1611136800000 : {
+            1611136800000 : {
+              time : 300000,
+              actions : 4
+            },
+            1611137100000 : {
+              time : 300000,
+              actions : 3
+            },
+            1611137400000 : {
+              time : 300000,
+              actions : 1
+            },
+            1611138900000 : {
+              time : 300000,
+              actions : 3
+            },
+            1611139200000 : {
+              time : 41000,
+              actions : 0
+            },
+            1611139800000 : {
+              time : 0,
+              actions : 0
+            }
+          }
+        }
+      }
+    });
+    service.setLastScreenshot(service.workTime);
+    expect(service.screenshot).toEqual( {
+      link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611136690111.png?generation=1611136691451406&alt=media',
+      dateCreated : 1611136691979.0
+    });
+  }));
+
+  /**
    * createWorkTimeObject
    * change needed service property to public for testing and change to private after testing
    */

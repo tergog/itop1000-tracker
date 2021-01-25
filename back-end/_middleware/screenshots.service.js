@@ -29,9 +29,10 @@ async function takeScreenshots() {
   }
 
   // save image
+  const dateCreated = new Date();
   await jimp.write(imgPath);
 
   // return image's name
   const pathArr = imgPath.split('/');
-  return pathArr[pathArr.length - 1];
+  return {link: pathArr[pathArr.length - 1], dateCreated};
 }

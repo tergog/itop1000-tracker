@@ -17,6 +17,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 
 
+
 let win;
 let screenshotDialog;
 
@@ -66,13 +67,12 @@ function createWindow() {
 
   win.loadURL("http://localhost:4200");
 
-
-  ipcMain.on('mouse-event-channel', (event, message) => {
+  ipcMain.on('mouse-event-channel', (event) => {
     let mousePos = screen.getCursorScreenPoint();
     event.sender.send('mouse-event-channel', mousePos);
   });
 
-  // TODO screenshot dialog window
+
   ipcMain.on('screenshot-channel', (event, message) => {
     const screenWidth = robot.getScreenSize().width;
 
@@ -86,9 +86,9 @@ function createWindow() {
         contextIsolation: false,
         nodeIntegration: true
       },
-      frame: false,
-      autoHideMenuBar: true,
-      resizable: false
+      // frame: false,
+      // autoHideMenuBar: true,
+      // resizable: false
     })
 
     screenshotDialog.loadURL(url.format({
@@ -102,7 +102,7 @@ function createWindow() {
       setTimeout(() => {
         screenshotDialog.show();
       }, 200);
-    }, 100);
+    }, 200);
 
     ipcMain.once('screenshot-dialog-channel', (sDEvent, sDMessage) => {
       sDMessage ? event.sender.send('screenshot-channel', message) : event.sender.send('screenshot-channel', false);
@@ -135,6 +135,9 @@ function createWindow() {
   });
 
   win.on('closed', () => {
+    ipcMain.removeAllListeners('screenshot-channel');
+    ipcMain.removeAllListeners('screenshot-dialog-channel');
+    ipcMain.removeAllListeners('mouse-event-channel');
     win = null;
   });
 }

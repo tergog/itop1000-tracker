@@ -14,6 +14,7 @@ module.exports = {
   getUserProjects,
   updateWorkTime,
   takeScreenshot,
+  // deleteScreenshot
 }
 
 async function authenticate({ email, password }) {
@@ -41,20 +42,25 @@ async function takeScreenshot(token, { projectId, workTime }) {
   const project = account.activeProjects[projectId];
 
   // create screenshot and get name
-  const link = await screenshotService.takeScreenshots();
+  const screenshot = await screenshotService.takeScreenshots();
 
   // create screenshot path for storage and upload screenshot
-  const screenshotLink = [project.employerId, project.title, account._id, link].join('/');
-  const storageImageLink = await storageService.uploadFile(screenshotLink, `./itop-screenshots/${link}`)
+  const screenshotLink = [project.employerId, project.title, account._id, screenshot.link].join('/');
+  const storageImageLink = await storageService.uploadFile(screenshotLink, `./itop-screenshots/${screenshot.link}`)
 
   // delete image from app
-  await fs.unlinkSync(`./itop-screenshots/${link}`);
+  await fs.unlinkSync(`./itop-screenshots/${screenshot.link}`);
   await fs.rmdirSync(`./itop-screenshots`);
 
   // return updated screenshot
   await defaultProjectUpdating(account, projectId, workTime);
-  return { link: storageImageLink, dateCreated: Date.now() };
+  return { link: storageImageLink, dateCreated: screenshot.dateCreated };
 }
+
+// TODO update all deleting logic
+// async function deleteScreenshot(token, screenshotLink) {
+//   await storageService.deleteFile(screenshotLink);
+// }
 
 async function getAccount(token) {
   const userId = jwt.verify(token, config.secret);
