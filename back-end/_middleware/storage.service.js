@@ -4,7 +4,7 @@ const path = require('path');
 
 module.exports = {
   uploadFile,
-  // deleteFile
+  deleteFile
 }
 
 const storage = new Storage({ keyFilename: path.join(__dirname, `../../${config.storageConfigFile}`) });
@@ -30,16 +30,16 @@ async function uploadFile(key, file) {
 }
 
 
-// async function deleteFile(screenshotLink) {
-//   let link = screenshotLink.split('/');
-//   link = link[link.length - 1].split('%2F');
-//
-//   const employer = link[0];
-//   const project = link[1].split('%20').join(' ');
-//   const worker = link[2];
-//   const fileName = link[link.length - 1].split('?')[0];
-//
-//   const prefix = [employer, project, worker, fileName].join('/');
-//
-//   storage.bucket(bucketName).deleteFiles( { prefix }, (error) => console.log(error));
-// }
+async function deleteFile(screenshotLink) {
+  let link = screenshotLink.split('/');
+  link = link[link.length - 1].split('%2F');
+
+  const employer = link[0];
+  const project = link[1].split('%20').join(' ');
+  const worker = link[2];
+  const fileName = link[link.length - 1].split('?')[0];
+
+  const prefix = [employer, project, worker, fileName].join('/');
+
+  storage.bucket(bucketName).deleteFiles( { prefix }, (error) => console.log(error));
+}

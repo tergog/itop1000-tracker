@@ -1,12 +1,14 @@
 const { Router } = require('express');
 const router = Router();
 const usersService = require('./accounts.service');
+const authorize = require('../_middleware/authorize');
 
 
 router.post('/auth', authenticate);
-router.get('/projects', getUserProjects);
-router.post('/update', updateWorkTime);
-router.post('/screenshot', screenshot);
+router.get('/projects', authorize(), getUserProjects);
+router.post('/update', authorize(), updateWorkTime);
+router.post('/screenshot', authorize(), screenshot);
+router.post('/delete-screenshot', authorize(), deleteScreenshot);
 
 module.exports = router;
 
@@ -37,5 +39,13 @@ function screenshot(req, res, next) {
         .then(response => res.json(response))
         .catch(err => next(err));
 }
+
+function deleteScreenshot(req, res, next) {
+  const token = req.headers.authorization.split(' ')[1];
+  usersService.deleteScreenshot(token, req.body)
+    .then(response => res.json(response))
+    .catch(err => next(err));
+}
+
 
 

@@ -17,6 +17,10 @@
     let screenshot = document.querySelector('#screenshot');
     screenshot.setAttribute('src', message.link);
 
+    screenshot.addEventListener('click', () => {
+      ipcRenderer.send('screenshot-dialog-resize-channel');
+    })
+
     let count = 10;
     let countdown = document.querySelector('#countdown');
     countdown.innerHTML = ` ${count} `

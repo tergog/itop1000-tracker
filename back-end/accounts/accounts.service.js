@@ -1,12 +1,11 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-const path = require('path');
 
 const screenshotService = require('../_middleware/screenshots.service');
 const storageService = require('../_middleware/storage.service');
 const config = require('../../config.json');
-const db = require('../_helpers/db');
+const db = require('../_db/db');
 const Account = db.Account;
 
 module.exports = {
@@ -14,7 +13,7 @@ module.exports = {
   getUserProjects,
   updateWorkTime,
   takeScreenshot,
-  // deleteScreenshot
+  deleteScreenshot
 }
 
 async function authenticate({ email, password }) {
@@ -57,10 +56,10 @@ async function takeScreenshot(token, { projectId, workTime }) {
   return { link: storageImageLink, dateCreated: screenshot.dateCreated };
 }
 
-// TODO update all deleting logic
-// async function deleteScreenshot(token, screenshotLink) {
-//   await storageService.deleteFile(screenshotLink);
-// }
+
+async function deleteScreenshot(token, { link }) {
+  await storageService.deleteFile(link);
+}
 
 async function getAccount(token) {
   const userId = jwt.verify(token, config.secret);

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { ScreenshotService } from './screenshot.service';
 
 import { WorkDataModel } from '../models/work-data.model';
 import { ScreenshotModel } from '../models/screenshot.model';
@@ -21,6 +22,9 @@ export class WorkDataService {
   public lastDayKey: number;
   public lastHourKey: number;
   public lastIntervalKey: number;
+
+  constructor(private screenshotService: ScreenshotService) {
+  }
 
   public setWorkTime(interval: number, workTimeObject?: WorkDataModel): void {
     this.setStartTimeValues();
@@ -118,9 +122,13 @@ export class WorkDataService {
     const actions = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].actions;
     const time = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].time;
 
-    actions === 0 && time / 1000 / 60 > 1 ?
-      delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey] :
+    if (actions === 0 && time / 1000 / 60 > 1) {
+      const link = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].screenshot.link;
+      this.screenshotService.deleteScreenshot(link).subscribe(() => {});
+      delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey];
+    } else {
       this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].time += sec;
+    }
   }
 
   public setInterval(sec: number): void {
@@ -193,7 +201,7 @@ export class WorkDataService {
     this.createIntervalObject();
   }
 
-  private setSumsOfTime(): void {
+  public setSumsOfTime(): void {
     this.setTodayWorkTime();
     this.setWeekWorkTime();
   }

@@ -13,4 +13,8 @@ export class ScreenshotService {
   public takeScreenshot(projectId: number, workTime: object): Observable<any> {
     return this.http.post<any>(`${environment.apiURL}/accounts/screenshot`, {projectId, workTime}).pipe(take(1));
   }
+
+  public deleteScreenshot(link: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiURL}/accounts/delete-screenshot`, { link }).pipe(take(1));
+  }
 }

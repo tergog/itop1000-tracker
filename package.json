@@ -1,6 +1,6 @@
 {
   "name": "time-tracker",
-  "version": "0.0.0",
+  "version": "0.0.2",
   "main": "app.js",
   "description": "ITOP Tracker",
   "scripts": {
@@ -11,7 +11,7 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "electron": "electron .",
-    "electron-packager": "electron-packager . time-tracker --platform linux --overwrite --arch x64 --out .",
+    "electron-packager": "electron-packager . time-tracker --platform linux --asar --overwrite --arch x64 --out .",
     "electron-installer-debian": "electron-installer-debian --src ./time-tracker-linux-x64/ --dest ./installers/ --arch amd64"
   },
   "private": true,
@@ -32,6 +32,8 @@
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-jwt": "^6.0.0",
+    "iohook": "^0.7.2",
     "jimp": "^0.16.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.1",
@@ -66,6 +68,7 @@
     "karma-coverage-istanbul-reporter": "~3.0.2",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
+    "node-abi": "^2.19.3",
     "node-gyp": "^7.1.2",
     "protractor": "~7.0.0",
     "ts-node": "~8.3.0",

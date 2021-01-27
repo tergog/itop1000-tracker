@@ -1,5 +1,4 @@
-const { app, BrowserWindow, ipcMain, screen, globalShortcut } = require('electron');
-const jwtDecode = require('jwt-decode');
+const { app, BrowserWindow, ipcMain, screen, Tray } = require('electron');
 const url = require("url");
 const path = require("path");
 
@@ -30,17 +29,15 @@ app.on('activate', () => {
 });
 
 function createWindow() {
-
   // window config
-
   win = new BrowserWindow({
-    width: 1000, // 350,
+    width: 350, // 1000,
     height: 600,
-    // resizable: false,
+    resizable: false,
     useContentSize: true,
-    // autoHideMenuBar: true,
+    autoHideMenuBar: true,
     webPreferences: {
-      // devTools: false,
+      devTools: false,
       nodeIntegration: true,
       enableRemoteModule: true,
       webSecurity: false
@@ -55,44 +52,45 @@ function createWindow() {
 
   // get front-end from dist folder for prod
 
-  // win.loadURL(url.format({
-  //     pathname: path.join(__dirname, `dist/index.html`),
-  //     protocol: "file",
-  //     slashes: true
-  //   })
-  // );
+  win.loadURL(url.format({
+      pathname: path.join(__dirname, `dist/index.html`),
+      protocol: "file",
+      slashes: true
+    })
+  );
 
 
   // get front-end from "ng serve"  for development
 
-  win.loadURL("http://localhost:4200");
+  // win.loadURL("http://localhost:4200");
+
 
   ipcMain.on('mouse-event-channel', (event) => {
     let mousePos = screen.getCursorScreenPoint();
     event.sender.send('mouse-event-channel', mousePos);
   });
 
-
   ipcMain.on('screenshot-channel', (event, message) => {
     const screenWidth = robot.getScreenSize().width;
 
     screenshotDialog = new BrowserWindow({
       width: 250,
-      height: 180,
+      height: 175,
       x: screenWidth - 250,
       y: 0,
       show: false,
+      focusable: false,
       webPreferences: {
         contextIsolation: false,
         nodeIntegration: true
       },
-      // frame: false,
-      // autoHideMenuBar: true,
-      // resizable: false
+      frame: false,
+      autoHideMenuBar: true,
+      resizable: false
     })
 
     screenshotDialog.loadURL(url.format({
-      pathname: path.join(__dirname, `electron/screenshot.html`),
+      pathname: path.join(__dirname, `electron/screenshot-dialog/screenshot-dialog.html`),
       protocol: "file",
       slashes: true
     }))
@@ -105,20 +103,28 @@ function createWindow() {
     }, 200);
 
     ipcMain.once('screenshot-dialog-channel', (sDEvent, sDMessage) => {
-      sDMessage ? event.sender.send('screenshot-channel', message) : event.sender.send('screenshot-channel', false);
+      sDMessage ? event.sender.send('screenshot-channel', {status: true, screenshot: message}) :
+        event.sender.send('screenshot-channel', {status: false, screenshot: message});
       screenshotDialog.close();
+    });
+
+    ipcMain.on('screenshot-dialog-resize-channel', (sDREvent, sDRMessage) => {
+      screenshotDialog.setSize(1500, 900);
+      screenshotDialog.center();
     });
 
 
     screenshotDialog.on('closed', () => {
+      ipcMain.removeAllListeners('screenshot-dialog-resize-channel');
       screenshotDialog = null;
     });
   });
 
   win.on('close', (e) => {
+    // updating back-end if closing from TimeTrackerComponent
+    win.webContents.send('closing-channel');
 
     // open dialog window
-
     const choice = require('electron').dialog.showMessageBoxSync(win,
       {
         'type': 'question',
@@ -140,28 +146,4 @@ function createWindow() {
     ipcMain.removeAllListeners('mouse-event-channel');
     win = null;
   });
-}
-
-
-// get users token and update ActiveProject workTime
-
-async function updateWorkTimeData() {
-  let localStorageData;
-
-  await win.webContents.executeJavaScript('({...localStorage});')
-    .then(result => {
-      localStorageData = result;
-    });
-
-  if (!localStorageData.activeProject) {
-    return;
-  }
-
-  const user = jwtDecode(localStorageData.token);
-
-  const projectId = Number(localStorageData.activeProject);
-  const workTime = user.activeProjects[projectId].workTime;
-  const token = localStorageData.token;
-
-  return { token, projectId, workTime };
 }

@@ -1,4 +1,4 @@
-const screenshotSchema = require('./screenshot.schema')
+const screenshotSchema = require('./screenshot.schema');
 
 const projectSchema = {
     title: { type: String },
@@ -7,7 +7,6 @@ const projectSchema = {
     workTime: { type: Object },
     hoursPerWeek: { type: Number },
     interval: { type: Number },
-    screenshots: { type: [screenshotSchema] },
     dateCreated: { type: Date, default: Date.now() },
     dateUpdated: { type: Date }
 }
