@@ -33,11 +33,12 @@ function createWindow() {
   win = new BrowserWindow({
     width: 350, // 1000,
     height: 600,
-    resizable: false,
+    // resizable: false,
     useContentSize: true,
-    autoHideMenuBar: true,
+    icon: __dirname + '/assets/icons/64x64.png',
+    // autoHideMenuBar: true,
     webPreferences: {
-      devTools: false,
+      // devTools: false,
       nodeIntegration: true,
       enableRemoteModule: true,
       webSecurity: false
@@ -45,6 +46,7 @@ function createWindow() {
   });
 
   // start back-end server
+
   appServer.listen(3000, () => {
     console.log("server has been started");
   })
@@ -52,17 +54,17 @@ function createWindow() {
 
   // get front-end from dist folder for prod
 
-  win.loadURL(url.format({
-      pathname: path.join(__dirname, `dist/index.html`),
-      protocol: "file",
-      slashes: true
-    })
-  );
+  // win.loadURL(url.format({
+  //     pathname: path.join(__dirname, `dist/index.html`),
+  //     protocol: "file",
+  //     slashes: true
+  //   })
+  // );
 
 
   // get front-end from "ng serve"  for development
 
-  // win.loadURL("http://localhost:4200");
+  win.loadURL("http://localhost:4200");
 
 
   ipcMain.on('mouse-event-channel', (event) => {

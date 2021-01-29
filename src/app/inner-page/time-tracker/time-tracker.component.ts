@@ -149,14 +149,14 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   private createWorkInterval(): void {
-    this.updateCountdown();
     this.workInterval = interval(1000 * this.workPassage).subscribe((i) => {
+      this.updateCountdown();
       // TODO update/fix redundant second's issue
       if (i > 0 && this.isWorking) {
       this.workDataService.addWorkTime(1000);
       }
-      this.updateCountdown();
     });
+    this.updateCountdown();
   }
 
   private updateCountdown(): void {

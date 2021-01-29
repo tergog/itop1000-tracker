@@ -1,8 +1,38 @@
 {
-  "name": "time-tracker",
+  "name": "itop1000_tracker",
   "version": "0.0.2",
   "main": "app.js",
-  "description": "ITOP Tracker",
+  "description": "Add app icon",
+  "author": {
+    "name": "ITOP1000",
+    "email": "stepanenkoo.vsevolod@gmail.com"
+  },
+  "build": {
+    "appId": "itop.time-tracker.app",
+    "productName": "ITOP1000 TimeTracker",
+    "directories": {
+      "buildResources": "dist",
+      "output": "itop1000_tracker",
+      "app": "."
+    },
+    "linux": {
+      "icon": "./assets/icons",
+      "target": [
+        {
+          "target": "appImage",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    }
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -11,8 +41,8 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "electron": "electron .",
-    "electron-packager": "electron-packager . time-tracker --platform linux --asar --overwrite --arch x64 --out .",
-    "electron-installer-debian": "electron-installer-debian --src ./time-tracker-linux-x64/ --dest ./installers/ --arch amd64"
+    "electron-packager": "electron-packager . itop1000_tracker --platform linux --asar --overwrite --arch x64 --out .",
+    "electron-installer-debian": "electron-installer-debian --src ./itop1000_tracker-linux-x64/ --dest ./installers/ --arch amd64"
   },
   "private": true,
   "dependencies": {
@@ -33,7 +63,6 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-jwt": "^6.0.0",
-    "iohook": "^0.7.2",
     "jimp": "^0.16.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.1",
@@ -57,6 +86,7 @@
     "@types/node": "^12.11.1",
     "codelyzer": "^6.0.0",
     "electron": "^10.1.0",
+    "electron-builder": "^22.9.1",
     "electron-installer-debian": "^3.1.0",
     "electron-installer-windows": "^3.0.0",
     "electron-packager": "^15.2.0",

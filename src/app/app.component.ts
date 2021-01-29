@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { LocalStorage } from './shared/constants/local-storage';
 
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',

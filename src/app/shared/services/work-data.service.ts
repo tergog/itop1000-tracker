@@ -70,6 +70,7 @@ export class WorkDataService {
     const lastInterval = this.getLastIntervalTime();
     console.log(new Date());
     if (!this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey].hasOwnProperty(lastInterval)) {
+      console.log(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey]);
       this.updateLastIntervalObject(sec);
       this.createIntervalObject();
       return;
