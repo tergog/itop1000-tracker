@@ -223,7 +223,7 @@ fdescribe('WorkTimeService', () => {
         }
       }
     });
-    service.setLastScreenshot(service.workTime);
+    service.setLastScreenshot(service.workData);
     expect(service.screenshot).toEqual( {
       link : 'https://storage.googleapis.com/download/storage/v1/b/time-tracker-screenshots-bucket/o/5fae6ba5a5798e2aa1cc3128%2FJust%20Project%2F5f9ac80672571316ab7ea326%2F1611136690111.png?generation=1611136691451406&alt=media',
       dateCreated : 1611136691979.0

@@ -1,8 +1,8 @@
 {
   "name": "itop1000_tracker",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "app.js",
-  "description": "Add app icon",
+  "description": "Update work data logic",
   "author": {
     "name": "ITOP1000",
     "email": "stepanenkoo.vsevolod@gmail.com"
@@ -11,7 +11,7 @@
     "appId": "itop.time-tracker.app",
     "productName": "ITOP1000 TimeTracker",
     "directories": {
-      "buildResources": "dist",
+      "buildResources": "src",
       "output": "itop1000_tracker",
       "app": "."
     },

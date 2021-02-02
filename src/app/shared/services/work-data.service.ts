@@ -1,18 +1,19 @@
 import { Injectable } from '@angular/core';
-import { ScreenshotService } from './screenshot.service';
 
-import { WorkDataModel } from '../models/work-data.model';
+import { WorkDataModel, WorkIntervalModel } from '../models/work-data.model';
 import { ScreenshotModel } from '../models/screenshot.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WorkDataService {
-  public workTime: WorkDataModel = {};
+  public workData: WorkDataModel = {};
   public today = 0;
   public week = 0;
   public interval = 0;
+
   public screenshot: ScreenshotModel;
+  public workInterval: WorkIntervalModel;
 
   private startWeek: number;
   private startDay: number;
@@ -23,84 +24,76 @@ export class WorkDataService {
   public lastHourKey: number;
   public lastIntervalKey: number;
 
-  constructor(private screenshotService: ScreenshotService) {
-  }
 
   public setWorkTime(interval: number, workTimeObject?: WorkDataModel): void {
     this.setStartTimeValues();
     this.setInterval(interval);
 
-    (!workTimeObject || this.isObjectEmpty(workTimeObject)) ? this.createWorkTimeObject() : this.workTime = workTimeObject;
+    (!workTimeObject || this.isObjectEmpty(workTimeObject)) ? this.createWorkTimeObject() : this.workData = workTimeObject;
 
-    this.lastWeekKey = this.getLastKey(this.workTime);
-    this.lastDayKey = this.getLastKey(this.workTime[this.lastWeekKey]);
-    this.lastHourKey = this.getLastKey(this.workTime[this.lastWeekKey][this.lastDayKey]);
-    this.lastIntervalKey = this.getLastIntervalTime();
+    this.lastWeekKey = this.getLastKey(this.workData);
+    this.lastDayKey = this.getLastKey(this.workData[this.lastWeekKey]);
+    this.lastHourKey = this.getLastKey(this.workData[this.lastWeekKey][this.lastDayKey]);
+    this.lastIntervalKey = this.getLastKey(this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey]);
 
-    this.setLastScreenshot(this.workTime);
-
+    this.setLastScreenshot(this.workData);
     this.updateWorkTimeByDate();
-
-    console.log(this.workTime);
-    if (!this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey].hasOwnProperty(this.lastIntervalKey)) {
-      this.createIntervalObject();
-    }
     this.setSumsOfTime();
   }
 
-  public addWorkTime(sec: number): void {
-    const date: Date = new Date();
-
-    if (date.getDay() !== new Date(this.lastDayKey).getDay()) {
-      this.setStartTimeValues();
-      this.updateWorkTimeByDate();
-      this.setSumsOfTime();
-    }
-
-    if (date.getHours() !== new Date(this.lastHourKey).getHours()) {
-      this.updateLastIntervalObject(sec);
-      this.isObjectEmpty(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey]) &&
-      delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey];
-      this.startHour = this.getStartHour(date);
-      this.addNewHour();
-      this.createIntervalObject();
-      return;
-    }
-
-    const lastInterval = this.getLastIntervalTime();
-    console.log(new Date());
-    if (!this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey].hasOwnProperty(lastInterval)) {
-      console.log(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey]);
-      this.updateLastIntervalObject(sec);
-      this.createIntervalObject();
-      return;
-    }
-
-    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].time += sec;
+  public setInterval(sec: number): void {
+    this.interval = sec;
   }
+
+
+  public addWorkTime(sec: number): void {
+    this.workInterval.time += sec;
+  }
+
+
+  // action
 
   public addAction(action: number): void {
-    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].actions += action;
+    this.workInterval.actions += action;
   }
+
+
+  // screenshot
 
   public addScreenshot(screenshot: ScreenshotModel): void {
-    const screenshotDate = new Date(screenshot.dateCreated);
-    const week = this.getStartWeek(screenshotDate);
-    const day = this.getStartDay(screenshotDate);
-    const hour = this.getStartHour(screenshotDate);
-    const interval = this.getLastIntervalTime(screenshotDate);
-
-    this.workTime[week][day][hour][interval].screenshot = screenshot;
+    this.workInterval.screenshot = screenshot;
     this.screenshot = screenshot;
-    console.log('addScreenshot: ', this.workTime);
   }
 
-  public deleteScreenshot(): void {
-    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey].time = 0;
+  public setLastScreenshot(obj: object): void {
+    if (this.isObjectEmpty(obj)) {
+      return;
+    }
+    const keys = Object.keys(obj);
+    keys.sort((a, b) => (+b) - (+a));
+
+    if (obj[keys[0]].hasOwnProperty('time')) {
+      for (const key of keys) {
+        if (obj[key].hasOwnProperty('screenshot')) {
+          this.screenshot = obj[key].screenshot;
+          return;
+        }
+      }
+      return;
+    } else {
+      for (const key of keys) {
+        (!this.screenshot || this.isObjectEmpty(this.screenshot)) && this.setLastScreenshot(obj[key]);
+      }
+    }
   }
+
+  // if screenshot is deleted
+  public nullifyIntervalTime(): void {
+    this.workInterval.time = 0;
+  }
+
 
   public getLastIntervalTime(date = new Date()): number {
-    // const date = new Date();
     const intervalMinutes = this.interval / 60;
     const presentMinutes = date.getMinutes();
 
@@ -112,33 +105,8 @@ export class WorkDataService {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), minutes).getTime();
   }
 
-  public createIntervalObject(): void {
-    const createTime = this.getLastIntervalTime();
-    this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][createTime] = {time: 0, actions: 0};
-    this.lastIntervalKey = createTime;
-  }
 
-  private updateLastIntervalObject(sec: number): void {
-    const lastIntervalKey = this.getLastKey(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey]);
-    const actions = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].actions;
-    const time = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].time;
-
-    if (actions === 0 && time / 1000 / 60 > 1) {
-      const link = this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].screenshot.link;
-      this.screenshotService.deleteScreenshot(link).subscribe(() => {});
-      delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey];
-    } else {
-      this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastIntervalKey].time += sec;
-    }
-  }
-
-  public setInterval(sec: number): void {
-    this.interval = sec;
-  }
-
-  private setWeekWorkTime(): void {
-    this.week = this.getSummaryTimeFromObject(this.workTime[this.lastWeekKey]);
-  }
+  // get/set start time values
 
   public setStartTimeValues(): void {
     const date: Date = new Date();
@@ -161,22 +129,22 @@ export class WorkDataService {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours()).getTime();
   }
 
-  private updateWorkTimeByDate(): void {
-    this.isObjectEmpty(this.workTime[this.lastWeekKey]) && delete this.workTime[this.lastWeekKey];
+
+  // update work data by date
+
+  public updateWorkTimeByDate(): void {
+    this.isObjectEmpty(this.workData[this.lastWeekKey]) && delete this.workData[this.lastWeekKey];
     this.lastWeekKey !== this.startWeek && this.addNewWeek();
 
-    this.isObjectEmpty(this.workTime[this.lastWeekKey][this.lastDayKey]) &&
-    delete this.workTime[this.lastWeekKey][this.lastDayKey];
+    this.isObjectEmpty(this.workData[this.lastWeekKey][this.lastDayKey]) &&
+    delete this.workData[this.lastWeekKey][this.lastDayKey];
     this.lastDayKey !== this.startDay && this.addNewDay();
 
-
-    this.isObjectEmpty(this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey]) &&
-    delete this.workTime[this.lastWeekKey][this.lastDayKey][this.lastHourKey];
     this.lastHourKey !== this.startHour && this.addNewHour();
   }
 
   public addNewWeek(): void {
-    this.workTime[this.startWeek] = {
+    this.workData[this.startWeek] = {
       [this.startDay]: {
         [this.startHour]: {}
       }
@@ -184,49 +152,23 @@ export class WorkDataService {
     this.lastWeekKey = this.startWeek;
     this.lastDayKey = this.startDay;
     this.lastHourKey = this.startHour;
-    this.createIntervalObject();
   }
 
   public addNewDay(): void {
-    this.workTime[this.lastWeekKey][this.startDay] = {
+    this.workData[this.lastWeekKey][this.startDay] = {
       [this.startHour]: {}
     };
     this.lastDayKey = this.startDay;
     this.lastHourKey = this.startHour;
-    this.createIntervalObject();
   }
 
   public addNewHour(): void {
-    this.workTime[this.lastWeekKey][this.lastDayKey][this.startHour] = {};
+    this.workData[this.lastWeekKey][this.lastDayKey][this.startHour] = {};
     this.lastHourKey = this.startHour;
-    this.createIntervalObject();
   }
 
-  public setSumsOfTime(): void {
-    this.setTodayWorkTime();
-    this.setWeekWorkTime();
-  }
 
-  private setTodayWorkTime(): void {
-    this.today = this.getSummaryTimeFromObject(this.workTime[this.lastWeekKey][this.lastDayKey]);
-  }
-
-  public createWorkTimeObject(): void {
-    const intervalKey = this.getLastIntervalTime();
-    this.workTime = {
-      [this.startWeek]: {
-        [this.startDay]: {
-          [this.startHour]: {
-            [intervalKey]: {
-              time: 0,
-              actions: 0
-            }
-          }
-        }
-      }
-    };
-    this.lastIntervalKey = intervalKey;
-  }
+  // get/set sums of time
 
   public getSummaryTimeFromObject(obj: any, sum = 0): number {
     for (const key in obj) {
@@ -239,24 +181,61 @@ export class WorkDataService {
     return sum;
   }
 
-  public setLastScreenshot(obj: object): void {
-    const keys = Object.keys(obj);
-    keys.sort((a, b) => (+b) - (+a));
+  public setSumsOfTime(): void {
+    this.setTodayWorkTime();
+    this.setWeekWorkTime();
+  }
 
-    if (obj[keys[0]].hasOwnProperty('time')) {
-      for (const key of keys) {
-        if (obj[key].hasOwnProperty('screenshot')) {
-          this.screenshot = obj[key].screenshot;
-          return;
+  private setTodayWorkTime(): void {
+    // debugger;
+    this.today = this.getSummaryTimeFromObject(this.workData[this.lastWeekKey][this.lastDayKey]);
+    // debugger;
+  }
+
+  private setWeekWorkTime(): void {
+    // debugger;
+    this.week = this.getSummaryTimeFromObject(this.workData[this.lastWeekKey]);
+    // debugger;
+  }
+
+
+  public createWorkTimeObject(): void {
+    this.workData = {
+      [this.startWeek]: {
+        [this.startDay]: {
+          [this.startHour]: {}
         }
       }
-      return;
-    } else {
-      for (const key of keys) {
-        (!this.screenshot || this.isObjectEmpty(this.screenshot)) && this.setLastScreenshot(obj[key]);
-      }
-    }
+    };
   }
+
+
+  // work with work interval object
+
+  public setWorkInterval(): void {
+    const lastInterval = this.getLastIntervalTime();
+    this.workInterval = lastInterval === this.lastIntervalKey ?
+      this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey] :
+      {
+        time: 0,
+        actions: 0
+      };
+
+    this.lastIntervalKey = lastInterval;
+    console.log('createWorkInterval: ', this.workData, this.workInterval);
+  }
+
+  public addWorkInterval(): void {
+    const lastInterval = this.getLastIntervalTime();
+    this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastInterval] = this.workInterval;
+    this.lastIntervalKey = lastInterval;
+    console.log('addWorkInterval: ', this.workData);
+  }
+
+  public isWorkIntervalUseless(): boolean {
+    return this.workInterval.actions === 0 && this.workInterval.time / 1000 / 60 >= 1;
+  }
+
 
   // helpers
 

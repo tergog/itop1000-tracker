@@ -35,7 +35,7 @@ function createWindow() {
     height: 600,
     // resizable: false,
     useContentSize: true,
-    icon: __dirname + '/assets/icons/64x64.png',
+    icon: __dirname + 'dist/assets/icons/64x64.png',
     // autoHideMenuBar: true,
     webPreferences: {
       // devTools: false,
@@ -45,7 +45,7 @@ function createWindow() {
     }
   });
 
-  // start back-end server
+  // start back-end server, PORT dev - 3000, prod - 2579
 
   appServer.listen(3000, () => {
     console.log("server has been started");

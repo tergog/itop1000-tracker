@@ -33,6 +33,9 @@ export class InnerPageComponent implements OnInit {
 
   public endWork(): void {
     this.isStarted = false;
+    this.userService.getUserProjects().subscribe((user: User) => {
+      this.projects = user.activeProjects;
+    });
   }
 
   public onLogoutClick(): void {
