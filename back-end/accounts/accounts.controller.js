@@ -34,7 +34,6 @@ function updateWorkTime(req, res, next) {
 
 function screenshot(req, res, next) {
     const token = req.headers.authorization.split(' ')[1];
-
     usersService.takeScreenshot(token, req.body)
         .then(response => res.json(response))
         .catch(err => next(err));

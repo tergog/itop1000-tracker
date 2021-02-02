@@ -167,8 +167,9 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
   private updateCountdown(): void {
     if (this.isWorking) {
-      this.workDataService.updateWorkTimeByDate();
       !this.workDataService.isWorkIntervalUseless() && this.workDataService.addWorkInterval();
+      this.workDataService.updateWorkTimeByDate(new Date());
+      this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe(() => {});
       this.workDataService.workInterval = {time: 1000, actions: 0};
 
       this.timer.unsubscribe();

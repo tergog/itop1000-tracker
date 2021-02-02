@@ -37,7 +37,7 @@ export class WorkDataService {
     this.lastIntervalKey = this.getLastKey(this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey]);
 
     this.setLastScreenshot(this.workData);
-    this.updateWorkTimeByDate();
+    this.updateWorkTimeByDate(new Date());
     this.setSumsOfTime();
   }
 
@@ -132,14 +132,17 @@ export class WorkDataService {
 
   // update work data by date
 
-  public updateWorkTimeByDate(): void {
+  public updateWorkTimeByDate(date: Date): void {
     this.isObjectEmpty(this.workData[this.lastWeekKey]) && delete this.workData[this.lastWeekKey];
+    this.startWeek = this.getStartWeek(date);
     this.lastWeekKey !== this.startWeek && this.addNewWeek();
 
     this.isObjectEmpty(this.workData[this.lastWeekKey][this.lastDayKey]) &&
     delete this.workData[this.lastWeekKey][this.lastDayKey];
+    this.startDay = this.getStartDay(date);
     this.lastDayKey !== this.startDay && this.addNewDay();
 
+    this.startHour = this.getStartHour(date);
     this.lastHourKey !== this.startHour && this.addNewHour();
   }
 
