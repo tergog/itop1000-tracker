@@ -21,9 +21,13 @@
     </div>
     <div>
       <p>This week</p>
-      <h4>{{workDataService.week + workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm'}} of {{project.hoursPerWeek}} hrs</h4>
+      <h4>{{workDataService.week + workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm'}} of {{project.hoursPerWeek}}
+        hrs</h4>
     </div>
   </div>
+  <label> Show new screenshot
+    <input type="checkbox" [checked]="isShowNewScreenshot" (change)="isShowNewScreenshot = !isShowNewScreenshot">
+  </label>
   <div *ngIf="lastScreenshot">
     <div>
       <p>Last screenshot - {{lastScreenshot.dateCreated | date : 'short' || ''}} </p>

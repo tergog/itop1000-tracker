@@ -25,6 +25,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public lastScreenshot: ScreenshotModel;
   public workTime = 0;
   public isWorking: boolean;
+  public isShowNewScreenshot = true;
 
   private mousePosition: { x: number, y: number };
   private isTakingScreenshot: boolean;
@@ -76,8 +77,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
       });
     });
 
-    this.electronService.ipcRenderer.on('mouse-event-channel', (event, resp) => {
-      // console.log('mouse-event: ', resp, this.mousePosition);
+    this.electronService.ipcRenderer.on('events-channel', (event, resp) => {
+      console.log('event: ', resp);
       if (this.mousePosition) {
         (resp.x !== this.mousePosition.x || resp.y !== this.mousePosition.y) && this.workDataService.addAction(1);
       }
@@ -103,7 +104,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.electronService.ipcRenderer.removeAllListeners('screenshot-channel');
-    this.electronService.ipcRenderer.removeAllListeners('mouse-event-channel');
+    this.electronService.ipcRenderer.removeAllListeners('events-channel');
     this.electronService.ipcRenderer.removeAllListeners('closing-channel');
   }
 
@@ -111,6 +112,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     if (!this.timer || this.timer.closed) {
       this.startWorkTime();
     } else {
+      this.workDataService.addWorkInterval();
       this.stopWorkTime();
     }
   }
@@ -128,7 +130,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     fromLastBetween > fromLastScreenshot ? this.nextScreenshotTime = -1 : this.setNextScreenshotTime();
 
     if (!this.workInterval) {
-      this.electronService.ipcRenderer.send('mouse-event-channel');
+      this.electronService.ipcRenderer.send('events-channel');
       this.workCountdown();
       this.startTimeout = setTimeout(() => {
         this.createWorkInterval();
@@ -140,6 +142,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   public endWorkTime(): void {
+    this.isWorking && this.workDataService.addWorkInterval();
     this.timer ? this.stopWorkTime() : this.exitProject.emit();
     this.usersService.updateWorkTime(this.projectId, this.workDataService.workData)
       .subscribe(() => {
@@ -151,7 +154,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
   public stopWorkTime(): void {
     this.timer.unsubscribe();
-    this.workDataService.addWorkInterval();
     this.isWorking = false;
     this.workDataService.setSumsOfTime();
     this.workTime = 0;
@@ -160,8 +162,10 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
   private createWorkInterval(): void {
     this.workInterval = interval(1000 * this.workPassage).pipe(takeUntil(this.destroy$)).subscribe(() => {
+      console.log('next updateCountdown: ', new Date());
       this.updateCountdown();
     });
+    console.log('first updateCountdown: ', new Date());
     this.updateCountdown();
   }
 
@@ -189,7 +193,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
       this.workDataService.addWorkTime(1000);
 
       if (sec !== 0 && ((sec + 1) % 60 === 0) || (sec === this.workDuration - 2)) {
-        this.electronService.ipcRenderer.send('mouse-event-channel');
+        this.electronService.ipcRenderer.send('events-channel');
       }
     });
   }
@@ -204,7 +208,14 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.isTakingScreenshot = true;
     this.screenshotService.takeScreenshot(this.projectId, this.workDataService.workData)
       .subscribe((screenshot: ScreenshotModel) => {
-        this.electronService.ipcRenderer.send('screenshot-channel', screenshot);
+        if (!this.isShowNewScreenshot) {
+          this.workDataService.addScreenshot(screenshot);
+          this.lastScreenshot = screenshot;
+          this.isTakingScreenshot = false;
+        }
+
+        // TODO not working
+        this.isShowNewScreenshot && this.electronService.ipcRenderer.send('screenshot-channel', screenshot);
       });
   }
 }

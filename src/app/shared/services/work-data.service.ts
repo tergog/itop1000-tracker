@@ -92,7 +92,6 @@ export class WorkDataService {
     this.workInterval.time = 0;
   }
 
-
   public getLastIntervalTime(date = new Date()): number {
     const intervalMinutes = this.interval / 60;
     const presentMinutes = date.getMinutes();
@@ -225,12 +224,12 @@ export class WorkDataService {
       };
 
     this.lastIntervalKey = lastInterval;
-    console.log('createWorkInterval: ', this.workData, this.workInterval);
+    console.log('setWorkInterval: ', this.workData, this.workInterval);
   }
 
   public addWorkInterval(): void {
     const lastInterval = this.getLastIntervalTime();
-    this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey][lastInterval] = this.workInterval;
+    this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey] = this.workInterval;
     this.lastIntervalKey = lastInterval;
     console.log('addWorkInterval: ', this.workData);
   }
