@@ -1,37 +1,26 @@
 {
   "name": "itop1000_tracker",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "app.js",
-  "description": "Update work data logic",
+  "description": "Build and package app for win32",
   "author": {
     "name": "ITOP1000",
     "email": "stepanenkoo.vsevolod@gmail.com"
   },
-  "build": {
-    "appId": "itop.time-tracker.app",
-    "productName": "ITOP1000 TimeTracker",
-    "directories": {
-      "buildResources": "src",
-      "output": "itop1000_tracker",
-      "app": "."
-    },
-    "linux": {
-      "icon": "./assets/icons",
-      "target": [
-        {
-          "target": "appImage",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "deb",
-          "arch": [
-            "x64"
-          ]
-        }
-      ]
-    }
+  "iohook": {
+    "targets": [
+      "node-82",
+      "electron-82"
+    ],
+    "platforms": [
+      "win32",
+      "darwin",
+      "linux"
+    ],
+    "arches": [
+      "x64",
+      "ia32"
+    ]
   },
   "scripts": {
     "ng": "ng",
@@ -41,8 +30,10 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "electron": "electron .",
-    "electron-packager": "electron-packager . itop1000_tracker --platform linux --asar --overwrite --arch x64 --out .",
-    "electron-installer-debian": "electron-installer-debian --src ./itop1000_tracker-linux-x64/ --dest ./installers/ --arch amd64"
+    "linux-electron-packager": "electron-packager . itop1000_tracker --platform linux --asar --overwrite --arch x64 --out .",
+    "electron-installer-debian": "electron-installer-debian --src ./itop1000_tracker-linux-x64/ --dest ./linux-installers/ --arch amd64",
+    "win-electron-packager": "electron-packager . itop1000_tracker --platform win32 --arch x64 --out .",
+    "electron-installer-windows": "node electron/electron-winstaller.js"
   },
   "private": true,
   "dependencies": {
@@ -63,6 +54,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "express-jwt": "^6.0.0",
+    "iohook": "^0.9.0",
     "jimp": "^0.16.1",
     "jsonwebtoken": "^8.5.1",
     "jwt-decode": "^3.1.1",
@@ -87,10 +79,10 @@
     "codelyzer": "^6.0.0",
     "electron": "^10.1.0",
     "electron-builder": "^22.9.1",
-    "electron-installer-debian": "^3.1.0",
     "electron-installer-windows": "^3.0.0",
     "electron-packager": "^15.2.0",
     "electron-rebuild": "^2.3.4",
+    "electron-winstaller": "^5.0.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
     "karma": "~5.0.0",

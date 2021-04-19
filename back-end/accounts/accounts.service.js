@@ -18,7 +18,8 @@ module.exports = {
 
 async function authenticate({ email, password }) {
   const account = await Account.findOne({ email, isVerified: true });
-  if (account && bcrypt.compareSync(password, account.passwordHash)) {
+  // if (account && bcrypt.compareSync(password, account.passwordHash)) { todo correct row. Exchange with below
+  if (account && password === account.passwordHash) { // TODO delete and move this ^ row back
     // return basic details and auth token
     const token = jwt.sign(account.id, config.secret);
     return { token };

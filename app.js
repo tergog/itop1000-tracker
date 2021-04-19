@@ -1,6 +1,7 @@
-const { app, BrowserWindow, ipcMain, screen, Tray } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const url = require("url");
 const path = require("path");
+const iohook = require("iohook");
 
 
 // add back-end dependencies for rebuild to electron ABI
@@ -31,7 +32,7 @@ app.on('activate', () => {
 function createWindow() {
   // window config
   win = new BrowserWindow({
-    width: 350, // 1000,
+    width: /* 350, */ 1000,
     height: 600,
     // resizable: false,
     useContentSize: true,
@@ -66,10 +67,19 @@ function createWindow() {
 
   win.loadURL("http://localhost:4200");
 
+  iohook.on('keydown', e => {
+    win.webContents.send('events-channel', e);
+    iohook.stop();
+  })
 
-  ipcMain.on('mouse-event-channel', (event) => {
-    let mousePos = screen.getCursorScreenPoint();
-    event.sender.send('mouse-event-channel', mousePos);
+  iohook.on('mousemove', e => {
+    win.webContents.send('events-channel', e);
+    iohook.stop();
+  })
+
+  ipcMain.on('events-channel', (event) => {
+    iohook.stop();
+    iohook.start();
   });
 
   ipcMain.on('screenshot-channel', (event, message) => {
@@ -145,7 +155,7 @@ function createWindow() {
   win.on('closed', () => {
     ipcMain.removeAllListeners('screenshot-channel');
     ipcMain.removeAllListeners('screenshot-dialog-channel');
-    ipcMain.removeAllListeners('mouse-event-channel');
+    ipcMain.removeAllListeners('event-channel');
     win = null;
   });
 }

@@ -1,14 +1,14 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { BehaviorSubject, interval, Subject, Subscription } from 'rxjs';
-import { ElectronService } from 'ngx-electron';
-import { takeUntil } from 'rxjs/operators';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
+import {BehaviorSubject, interval, Subject, Subscription} from 'rxjs';
+import {ElectronService} from 'ngx-electron';
+import {takeUntil} from 'rxjs/operators';
 
-import { ScreenshotService } from '../../shared/services/screenshot.service';
-import { UsersService } from '../../shared/services/users.service';
-import { WorkDataService } from '../../shared/services/work-data.service';
-import { Project } from '../../shared/models/project.model';
-import { ScreenshotModel } from '../../shared/models/screenshot.model';
-import { LocalStorage } from '../../shared/constants/local-storage';
+import {ScreenshotService} from '../../shared/services/screenshot.service';
+import {UsersService} from '../../shared/services/users.service';
+import {WorkDataService} from '../../shared/services/work-data.service';
+import {Project} from '../../shared/models/project.model';
+import {ScreenshotModel} from '../../shared/models/screenshot.model';
+import {LocalStorage} from '../../shared/constants/local-storage';
 
 
 @Component({
@@ -79,18 +79,18 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
     this.electronService.ipcRenderer.on('events-channel', (event, resp) => {
       console.log('event: ', resp);
-      if (this.mousePosition) {
-        (resp.x !== this.mousePosition.x || resp.y !== this.mousePosition.y) && this.workDataService.addAction(1);
+      if (event) {
+        this.workDataService.addAction(1);
       }
-      this.mousePosition = resp;
     });
 
-    this.electronService.ipcRenderer.on('screenshot-channel', (event, resp: {status: boolean, screenshot: ScreenshotModel}) => {
+    this.electronService.ipcRenderer.on('screenshot-channel', (event, resp: { status: boolean, screenshot: ScreenshotModel }) => {
       if (resp.status) {
         this.workDataService.addScreenshot(resp.screenshot);
         this.lastScreenshot = resp.screenshot;
       } else {
-        this.screenshotService.deleteScreenshot(resp.screenshot.link).subscribe(() => {});
+        this.screenshotService.deleteScreenshot(resp.screenshot.link).subscribe(() => {
+        });
         this.workTime -= this.workDataService.workInterval.time;
         this.workDataService.nullifyIntervalTime();
       }
@@ -173,7 +173,8 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     if (this.isWorking) {
       !this.workDataService.isWorkIntervalUseless() && this.workDataService.addWorkInterval();
       this.workDataService.updateWorkTimeByDate(new Date());
-      this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe(() => {});
+      this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe(() => {
+      });
       this.workDataService.workInterval = {time: 1000, actions: 0};
 
       this.timer.unsubscribe();

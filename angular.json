@@ -123,5 +123,8 @@
       }
     }
   },
-  "defaultProject": "time-tracker"
+  "defaultProject": "time-tracker",
+  "cli": {
+    "analytics": "21801630-6a1c-41a5-9d19-b4dc76bbdeae"
+  }
 }

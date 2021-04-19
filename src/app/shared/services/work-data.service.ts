@@ -189,15 +189,11 @@ export class WorkDataService {
   }
 
   private setTodayWorkTime(): void {
-    // debugger;
     this.today = this.getSummaryTimeFromObject(this.workData[this.lastWeekKey][this.lastDayKey]);
-    // debugger;
   }
 
   private setWeekWorkTime(): void {
-    // debugger;
     this.week = this.getSummaryTimeFromObject(this.workData[this.lastWeekKey]);
-    // debugger;
   }
 
 
@@ -224,14 +220,12 @@ export class WorkDataService {
       };
 
     this.lastIntervalKey = lastInterval;
-    console.log('setWorkInterval: ', this.workData, this.workInterval);
   }
 
   public addWorkInterval(): void {
     const lastInterval = this.getLastIntervalTime();
     this.workData[this.lastWeekKey][this.lastDayKey][this.lastHourKey][this.lastIntervalKey] = this.workInterval;
     this.lastIntervalKey = lastInterval;
-    console.log('addWorkInterval: ', this.workData);
   }
 
   public isWorkIntervalUseless(): boolean {

@@ -6,7 +6,9 @@
 # compiled output
 /itop1000_tracker
 /time-tracker-linux-x64
-/installers
+/time-tracker-win32-x64
+/linux-installers
+/win32-installers
 /dist
 /tmp
 /out-tsc
