@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const url = require("url");
 const path = require("path");
 const iohook = require("iohook");
@@ -83,7 +83,7 @@ function createWindow() {
   });
 
   ipcMain.on('screenshot-channel', (event, message) => {
-    const screenWidth = robot.getScreenSize().width;
+    const screenWidth = screen.getPrimaryDisplay().workAreaSize.width;
 
     screenshotDialog = new BrowserWindow({
       width: 250,
@@ -92,6 +92,7 @@ function createWindow() {
       y: 0,
       show: false,
       focusable: false,
+      alwaysOnTop: true,
       webPreferences: {
         contextIsolation: false,
         nodeIntegration: true
@@ -102,10 +103,10 @@ function createWindow() {
     })
 
     screenshotDialog.loadURL(url.format({
-      pathname: path.join(__dirname, `electron/screenshot-dialog/screenshot-dialog.html`),
+      pathname: path.join(__dirname, `electron`, `screenshot-dialog`, `screenshot-dialog.html`),
       protocol: "file",
       slashes: true
-    }))
+    }));
 
     setTimeout(() => {
       screenshotDialog.webContents.send('screenshot-dialog-channel', message);

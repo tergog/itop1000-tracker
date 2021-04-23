@@ -10,9 +10,12 @@
       <h2>{{workTime - (3 * 1000 * 60 * 60) | date : 'HH:mm:ss'}}</h2>
     </div>
     <div class="toggle">
-      <mat-slide-toggle [color]="'warn'" (change)="onSlideChange()"><span>{{isWorking ? 'Stop' : 'Start'}}</span>
+      <mat-slide-toggle [color]="'warn'" (change)="onSlideChange()" [checked]="isWorking"><span>{{isWorking ? 'Stop' : 'Start'}}</span>
       </mat-slide-toggle>
     </div>
+  </div>
+  <div *ngIf="inactionCount$.getValue() >= 2 ">
+    <p>There were no any actions more than 20 last minutes last</p>
   </div>
   <div class="info">
     <div>
@@ -33,7 +36,7 @@
       <p>Last screenshot - {{lastScreenshot.dateCreated | date : 'short' || ''}} </p>
     </div>
     <div>
-      <img style="width: 100%" [src]="lastScreenshot.link">
+      <img style="width: 100%" [src]="lastScreenshot.link" alt="Last_Screenshot">
     </div>
   </div>
 </div>

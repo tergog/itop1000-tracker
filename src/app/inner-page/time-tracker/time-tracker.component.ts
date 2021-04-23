@@ -27,10 +27,10 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   public isWorking: boolean;
   public isShowNewScreenshot = true;
 
-  private mousePosition: { x: number, y: number };
   private isTakingScreenshot: boolean;
 
   private secondCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  public inactionCount$: BehaviorSubject<number> = new BehaviorSubject<number>(0);
   private nextScreenshotTime: number;
   private workDuration = 0;
   private workPassage: number;
@@ -40,7 +40,6 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   private startTimeout;
 
   private destroy$: Subject<void> = new Subject<void>();
-
 
   private static getRandomNumber(min, max): number {
     return Math.floor(min + Math.random() * (max + 1 - min));
@@ -64,6 +63,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
 
     console.log(this.workDataService.workData);
 
+    // observe every second in work for make screenshot
     this.secondCount$.pipe(takeUntil(this.destroy$)).subscribe((sec: number) => {
       console.log('seconds: ', sec, this.nextScreenshotTime, this.workDataService.workInterval);
       if (sec === this.nextScreenshotTime) {
@@ -71,19 +71,28 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
       }
     });
 
+    // handle inactive(0 actions) work interval for pause tracking after more than 20 inactive min
+    this.inactionCount$.pipe(takeUntil(this.destroy$)).subscribe((value: number) => {
+      if (value >= 2) {
+        this.stopWorkTime();
+      }
+    });
+
+    // update work data in database if app closing via closing window
     this.electronService.ipcRenderer.on('closing-channel', () => {
       this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe(() => {
         this.electronService.ipcRenderer.send('closing-channel');
       });
     });
 
+    // listen electron shell which handling mouse/keyboard event
     this.electronService.ipcRenderer.on('events-channel', (event, resp) => {
-      console.log('event: ', resp);
       if (event) {
         this.workDataService.addAction(1);
       }
     });
 
+    // listen electron shell which make screenshot and add or not the screenshot depend on user choice
     this.electronService.ipcRenderer.on('screenshot-channel', (event, resp: { status: boolean, screenshot: ScreenshotModel }) => {
       if (resp.status) {
         this.workDataService.addScreenshot(resp.screenshot);
@@ -118,6 +127,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
   }
 
   public startWorkTime(): void {
+    // time to next workInterval
     this.workDuration = ((60 * 60) - (new Date().getMinutes() * 60) - new Date().getSeconds()) % this.workPassage;
 
     this.workDataService.setWorkInterval();
@@ -132,6 +142,7 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     if (!this.workInterval) {
       this.electronService.ipcRenderer.send('events-channel');
       this.workCountdown();
+      // start on next workInterval time
       this.startTimeout = setTimeout(() => {
         this.createWorkInterval();
       }, 1000 * this.workDuration);
@@ -141,49 +152,46 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
     this.isWorking = true;
   }
 
+  // on go out time-tracker page
   public endWorkTime(): void {
     this.isWorking && this.workDataService.addWorkInterval();
     this.timer ? this.stopWorkTime() : this.exitProject.emit();
-    this.usersService.updateWorkTime(this.projectId, this.workDataService.workData)
-      .subscribe(() => {
+    this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe(() => {
         localStorage.removeItem(LocalStorage.ACTIVE_PROJECT_ID);
         this.exitProject.emit();
         this.workDataService.workInterval = null;
       });
   }
 
+  // on pause work tracking
   public stopWorkTime(): void {
     this.timer.unsubscribe();
     this.isWorking = false;
-    this.workDataService.setSumsOfTime();
+    this.workDataService.setSumsOfTime(); // for update todayWorkTime and weekWorkTime
     this.workTime = 0;
-    this.mousePosition = null;
   }
 
   private createWorkInterval(): void {
     this.workInterval = interval(1000 * this.workPassage).pipe(takeUntil(this.destroy$)).subscribe(() => {
-      console.log('next updateCountdown: ', new Date());
+      this.onInactiveInterval();
       this.updateCountdown();
     });
-    console.log('first updateCountdown: ', new Date());
     this.updateCountdown();
   }
 
   private updateCountdown(): void {
     if (this.isWorking) {
-      !this.workDataService.isWorkIntervalUseless() && this.workDataService.addWorkInterval();
-      this.workDataService.updateWorkTimeByDate(new Date());
-      this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe(() => {
-      });
-      this.workDataService.workInterval = {time: 1000, actions: 0};
+        !this.workDataService.isWorkIntervalUseless() && this.workDataService.addWorkInterval();
+        this.workDataService.updateWorkTimeByDate(new Date());
+        this.usersService.updateWorkTime(this.projectId, this.workDataService.workData).subscribe();
+        this.workDataService.workInterval = {time: 1000, actions: 0};
 
-      this.timer.unsubscribe();
-      this.secondCount$.next(this.workDuration);
-      console.log('updateCountdown: ', this.workDataService.workData);
+        this.timer.unsubscribe();
+        this.secondCount$.next(this.workDuration);
 
-      this.workDuration = this.workPassage;
-      this.setNextScreenshotTime();
-      this.workCountdown();
+        this.workDuration = this.workPassage;
+        this.setNextScreenshotTime();
+        this.workCountdown();
     }
   }
 
@@ -215,8 +223,14 @@ export class TimeTrackerComponent implements OnInit, OnDestroy {
           this.isTakingScreenshot = false;
         }
 
-        // TODO not working
         this.isShowNewScreenshot && this.electronService.ipcRenderer.send('screenshot-channel', screenshot);
       });
+  }
+
+  private onInactiveInterval(): void {
+    if (this.isWorking) {
+      const inactiveCount = this.inactionCount$.getValue();
+      this.workDataService.isWorkIntervalUseless() && this.inactionCount$.next(inactiveCount + 1);
+    }
   }
 }
